@@ -1,0 +1,267 @@
+category,config_dependency,scene_details
+Full,None,Take a straight front-facing photo of the complete setup with everything clearly visible
+Full,None,Take a centered wide shot of the full desk and surrounding setup area
+Full,None,Take a front-left angle photo showing the desk depth and monitor positioning
+Full,None,Take a front-right angle photo showing the full workstation layout
+Full,None,Take a left-side perspective shot of the entire setup
+Full,None,Take a right-side perspective shot of the entire setup
+Full,None,Take a slightly elevated front view of the complete setup
+Full,None,Take a low-angle cinematic shot looking slightly upward at the setup
+Full,None,Take a top-down wide shot showing the desk organization and positioning
+Full,None,Take a room-wide shot showing the setup integrated into the environment
+Full,None,Take an over-the-shoulder view from behind the chair facing the setup
+Full,None,Take a diagonal corner shot showing both the desk and wall area
+Full,None,Take a symmetrical composition with the monitor centered perfectly
+Full,None,Take a full setup photo focused on the desk surface layout
+Full,None,Take a full setup photo focused on the relationship between desk and wall decor
+Full,None,Take a far-distance shot showing the complete workstation environment
+Full,None,Take a close environmental shot with the setup filling most of the frame
+Full,None,Take a standing-height perspective of the workstation
+Full,None,Take a seated eye-level perspective as if using the setup
+Full,None,Take a panoramic wide-angle shot of the entire setup space
+Full,None,Take a cinematic side-angle shot emphasizing setup depth
+Full,None,Take a centered horizontal composition of the complete setup
+Full,None,Take a vertical composition showing the setup from desk to wall
+Full,None,Take a clean minimal full-frame shot of the setup
+Full,None,Take a front perspective with more visible floor and under-desk area
+Full,None,Take a front perspective with more visible upper wall and lighting area
+Full,None,Take a diagonal rear-angle shot looking toward the monitor
+Full,None,Take a balanced composition showing desk accessories and hardware equally
+Full,None,Take a close wide-angle shot from the desk edge looking inward
+Full,None,Take a perspective shot emphasizing the monitor and PC together
+
+Monitor_Close,Monitors,Take a close front-facing shot of the monitor display area
+Monitor_Close,Monitors,Take a close shot of the monitor from the left-side angle
+Monitor_Close,Monitors,Take a close shot of the monitor from the right-side angle
+Monitor_Close,Monitors,Take a top-corner angle shot showing the monitor curvature
+Monitor_Close,Monitors,Take a low-angle shot looking upward toward the monitor
+Monitor_Close,Monitors,Take a diagonal close-up of the monitor bezel and stand
+Monitor_Close,Monitors,Take a close shot showing the monitor with keyboard underneath
+Monitor_Close,Monitors,Take a close-up showing reflections from the monitor onto the desk
+Monitor_Close,Monitors,Take a close shot focused on the monitor side profile
+Monitor_Close,Monitors,Take a centered monitor shot with blurred background objects
+Monitor_Close,Monitors,Take a cinematic close-up showing the monitor glow
+Monitor_Close,Monitors,Take a monitor close-up from over-the-shoulder perspective
+Monitor_Close,Monitors,Take a top-edge perspective shot of the monitor
+Monitor_Close,Monitors,Take a close-up of the lower monitor stand and desk area
+Monitor_Close,Monitors,Take a diagonal shot showing monitor positioning relative to the setup
+
+Keyboard_Close,Keyboard,Take a top-down close-up of the keyboard layout
+Keyboard_Close,Keyboard,Take a front typing-angle shot of the keyboard
+Keyboard_Close,Keyboard,Take a left-side close-up of the keyboard profile
+Keyboard_Close,Keyboard,Take a right-side close-up of the keyboard profile
+Keyboard_Close,Keyboard,Take a close-up of the keyboard corner resting on the desk mat
+Keyboard_Close,Keyboard,Take a close-up of the keyboard with the monitor blurred behind it
+Keyboard_Close,Keyboard,Take a cinematic close-up of the keyboard from desk level
+Keyboard_Close,Keyboard,Take a close-up focused on the keyboard key rows
+Keyboard_Close,Keyboard,Take a diagonal overhead shot of the keyboard area
+Keyboard_Close,Keyboard,Take a close-up showing the keyboard beside the mouse
+Keyboard_Close,Keyboard,Take a close-up focused on the front edge of the keyboard
+Keyboard_Close,Keyboard,Take a close shot showing the keyboard in the center of the desk
+Keyboard_Close,Keyboard,Take a perspective shot showing the keyboard depth and angle
+Keyboard_Close,Keyboard,Take a close-up showing the keyboard from a seated perspective
+Keyboard_Close,Keyboard,Take a cinematic close-up with shallow depth of field on the keyboard
+
+Mouse_Close,Mouse,Take a close-up of the mouse from directly above
+Mouse_Close,Mouse,Take a close-up of the mouse from the right-side angle
+Mouse_Close,Mouse,Take a close-up of the mouse from the left-side angle
+Mouse_Close,Mouse,Take a desk-level close-up of the mouse profile
+Mouse_Close,Mouse,Take a close shot of the mouse resting on the desk mat
+Mouse_Close,Mouse,Take a diagonal perspective close-up of the mouse
+Mouse_Close,Mouse,Take a cinematic close-up of the mouse with blurred background
+Mouse_Close,Mouse,Take a close-up focused on the mouse buttons and scroll wheel
+Mouse_Close,Mouse,Take a close-up showing the mouse beside the keyboard
+Mouse_Close,Mouse,Take a close-up emphasizing the mouse shape and curves
+
+DeskMat_Close,Desk Mat,Take a top-down close-up of the desk mat surface
+DeskMat_Close,Desk Mat,Take a side-angle shot showing the desk mat edge
+DeskMat_Close,Desk Mat,Take a close-up of the desk mat underneath the keyboard and mouse
+DeskMat_Close,Desk Mat,Take a close-up focused on the desk mat corner area
+DeskMat_Close,Desk Mat,Take a close shot showing the texture of the desk mat
+DeskMat_Close,Desk Mat,Take a desk-level perspective of the desk mat surface
+DeskMat_Close,Desk Mat,Take a wide close-up showing the desk mat covering the desk area
+DeskMat_Close,Desk Mat,Take a close-up showing reflections and lighting on the desk mat
+
+PC_Full,PC Case,Take a full side-panel view of the PC case
+PC_Full,PC Case,Take a front-corner angle shot of the PC case
+PC_Full,PC Case,Take a low-angle shot looking upward at the PC case
+PC_Full,PC Case,Take a slightly elevated perspective of the PC case
+PC_Full,PC Case,Take a close full shot of the PC case beside the desk
+PC_Full,PC Case,Take a diagonal side shot showing the case structure
+PC_Full,PC Case,Take a cinematic shot of the PC case with the monitor in background
+PC_Full,PC Case,Take a close perspective shot through the glass side panel
+PC_Full,PC Case,Take a front-facing shot focused on the PC case shape
+PC_Full,PC Case,Take a rear-side angle shot showing the case placement relative to the desk
+PC_Full,PC Case,Take a top-corner perspective shot of the PC case
+PC_Full,PC Case,Take a side shot showing the full height of the PC case
+PC_Full,PC Case,Take a close environmental shot of the PC integrated into the setup
+PC_Full,PC Case,Take a desk-level cinematic shot of the PC case
+PC_Full,PC Case,Take a perspective shot emphasizing the internal hardware visibility
+
+GPU_Close,GPU,Take a close-up of the GPU through the side panel glass
+GPU_Close,GPU,Take a side-angle close-up focused on the GPU body
+GPU_Close,GPU,Take a low internal angle shot of the GPU inside the case
+GPU_Close,GPU,Take a close-up focused on the GPU cooling section
+GPU_Close,GPU,Take a close shot showing the GPU installed on the motherboard
+GPU_Close,GPU,Take a cinematic close-up of the GPU with blurred surroundings
+GPU_Close,GPU,Take a diagonal internal shot focused on the GPU placement
+GPU_Close,GPU,Take a close-up showing the GPU connection and mounting area
+GPU_Close,GPU,Take a perspective shot of the GPU through reflections on the glass panel
+GPU_Close,GPU,Take a detailed close-up showing the GPU from front internal angle
+
+CPU_Close,CPU,Take a close-up of the CPU area inside the motherboard section
+CPU_Close,CPU,Take a diagonal close-up of the CPU installation area
+CPU_Close,CPU,Take a cinematic internal shot focused on the CPU region
+CPU_Close,CPU,Take a close-up showing the CPU area beside the RAM modules
+CPU_Close,CPU,Take a close shot of the processor area through the glass panel
+CPU_Close,CPU,Take a top internal angle focused on the CPU section
+CPU_Close,CPU,Take a low-angle internal shot looking toward the CPU area
+CPU_Close,CPU,Take a detailed close-up showing the processor mounting region
+
+Cooler_Close,CPU Cooler,Take a front-facing close-up of the CPU cooler
+Cooler_Close,CPU Cooler,Take a diagonal close-up of the CPU cooler mounted inside the case
+Cooler_Close,CPU Cooler,Take a close-up focused on the cooler fan area
+Cooler_Close,CPU Cooler,Take a top-angle close-up of the CPU cooler placement
+Cooler_Close,CPU Cooler,Take a cinematic close-up showing the cooler beside the motherboard
+Cooler_Close,CPU Cooler,Take a side-angle shot focused on the cooler tubing or structure
+Cooler_Close,CPU Cooler,Take a detailed internal shot showing the CPU cooler installation
+Cooler_Close,CPU Cooler,Take a close-up through the glass side panel focused on the cooler
+
+RAM_Close,RAM,Take a close-up of the RAM modules from the side angle
+RAM_Close,RAM,Take a top internal perspective focused on the RAM sticks
+RAM_Close,RAM,Take a close-up showing the RAM beside the CPU cooler
+RAM_Close,RAM,Take a cinematic internal shot focused on the RAM area
+RAM_Close,RAM,Take a close-up through the glass panel showing the RAM modules
+RAM_Close,RAM,Take a diagonal perspective shot focused on RAM placement
+RAM_Close,RAM,Take a detailed close-up of the RAM installed on the motherboard
+RAM_Close,RAM,Take a close shot showing RAM alignment and spacing
+RAM_Close,RAM,Capture the RAM modules from side perspective
+RAM_Close,RAM,Capture the RAM lighting area close-up
+RAM_Close,RAM,Capture the RAM with CPU cooler nearby
+RAM_Close,RAM,Capture the RAM from top internal angle
+RAM_Close,RAM,Capture the RAM reflection through glass panel
+RAM_Close,RAM,Capture the RAM profile silhouette
+RAM_Close,RAM,Capture the RAM close-up with motherboard details
+RAM_Close,RAM,Capture the RAM in cinematic internal framing
+
+
+Motherboard_Close,Motherboard,Take a close-up overview of the motherboard layout
+Motherboard_Close,Motherboard,Take a diagonal internal shot focused on the motherboard
+Motherboard_Close,Motherboard,Take a detailed close-up of the motherboard heatsink area
+Motherboard_Close,Motherboard,Take a close-up showing the motherboard with GPU installed
+Motherboard_Close,Motherboard,Take a top internal angle focused on the motherboard structure
+Motherboard_Close,Motherboard,Take a cinematic close-up showing the motherboard through glass
+Motherboard_Close,Motherboard,Take a lower-angle internal shot focused on motherboard depth
+Motherboard_Close,Motherboard,Take a close-up of the motherboard connection areas
+
+Fans_Close,Case Fans,Take a close-up of the case fans from the front angle
+Fans_Close,Case Fans,Take a side-angle shot focused on the fan arrangement
+Fans_Close,Case Fans,Take a close-up of the fan blades inside the case
+Fans_Close,Case Fans,Take a cinematic internal shot focused on the cooling layout
+Fans_Close,Case Fans,Take a close-up showing the fans mounted in the case
+Fans_Close,Case Fans,Take a top internal angle focused on fan placement
+Fans_Close,Case Fans,Take a detailed close-up of the fan structure
+Fans_Close,Case Fans,Take a perspective shot showing multiple fans together
+
+Storage_Close,Storage,Take a close-up of the storage installation area on the motherboard
+Storage_Close,Storage,Take a diagonal internal shot focused on storage placement
+Storage_Close,Storage,Take a close-up showing the storage area beneath cooling components
+Storage_Close,Storage,Take a detailed internal shot focused on storage positioning
+Storage_Close,Storage,Take a top-angle shot focused on the storage mounting area
+Storage_Close,Storage,Take a cinematic close-up of the motherboard storage section
+
+PSU_Close,Power Supply,Take a close-up of the power supply compartment
+PSU_Close,Power Supply,Take a side-angle shot focused on the power supply area
+PSU_Close,Power Supply,Take a close-up showing the power cables connected to the PSU
+PSU_Close,Power Supply,Take a lower-chamber perspective focused on the power supply
+PSU_Close,Power Supply,Take a detailed close-up showing the PSU installation area
+PSU_Close,Power Supply,Take a cinematic low-angle shot of the power supply section
+
+Cable_Close,Cable Extensions,Take a close-up of the cable extensions beside the motherboard
+Cable_Close,Cable Extensions,Take a side-angle shot focused on cable routing
+Cable_Close,Cable Extensions,Take a close-up of the cable arrangement inside the case
+Cable_Close,Cable Extensions,Take a detailed shot showing the cable layout and spacing
+Cable_Close,Cable Extensions,Take a cinematic close-up focused on cable curves and routing
+Cable_Close,Cable Extensions,Take a close-up showing cables connected near the GPU
+
+Speaker_Close,Speakers,Take a close-up of both speakers beside the monitor
+Speaker_Close,Speakers,Take a close-up of the left speaker from front angle
+Speaker_Close,Speakers,Take a close-up of the right speaker from front angle
+Speaker_Close,Speakers,Take a side-angle shot showing the speaker placement on the desk
+Speaker_Close,Speakers,Take a close-up focused on the speaker front surface
+Speaker_Close,Speakers,Take a cinematic desk-level shot of the speakers
+Speaker_Close,Speakers,Take a close-up showing the speakers with monitor background
+Speaker_Close,Speakers,Take a detailed close-up showing the speaker position relative to the keyboard
+
+Headset_Close,Headset,Take a close-up of the headset resting on the stand
+Headset_Close,Headset,Take a side-angle shot focused on the headset shape
+Headset_Close,Headset,Take a close-up of the headset earcup area
+Headset_Close,Headset,Take a detailed close-up of the headset headband
+Headset_Close,Headset,Take a cinematic close-up showing the headset on the desk setup
+Headset_Close,Headset,Take a close shot showing the headset placement beside the monitor
+
+Controller_Close,Controller,Take a close-up of the controller from the front angle
+Controller_Close,Controller,Take a side-angle shot focused on the controller shape
+Controller_Close,Controller,Take a close-up showing the controller resting on the desk
+Controller_Close,Controller,Take a detailed close-up of the controller buttons and triggers
+Controller_Close,Controller,Take a cinematic close-up with the setup blurred behind the controller
+Controller_Close,Controller,Take a close-up showing the controller beside the keyboard area
+
+Macro_Close,Macro Pad / Stream Deck,Take a top-down close-up of the macro pad
+Macro_Close,Macro Pad / Stream Deck,Take a close-up showing the macro pad beside the keyboard
+Macro_Close,Macro Pad / Stream Deck,Take a side-angle shot focused on the macro controls
+Macro_Close,Macro Pad / Stream Deck,Take a cinematic close-up showing the macro pad on the desk
+Macro_Close,Macro Pad / Stream Deck,Take a detailed close-up focused on the macro keys
+Macro_Close,Macro Pad / Stream Deck,Take a perspective shot showing the macro pad position within the setup
+
+Clock_Close,Clock,Take a close-up of the clock display area
+Clock_Close,Clock,Take a side-angle shot focused on the clock placement
+Clock_Close,Clock,Take a cinematic close-up of the clock integrated into the setup
+Clock_Close,Clock,Take a detailed close-up showing the clock on the desk
+Clock_Close,Clock,Take a close-up showing the clock with surrounding accessories
+Clock_Close,Clock,Capture the clock with ambient lighting reflections
+Clock_Close,Clock,Capture the clock integrated into the setup framing
+
+Figure_Close,Action Figures,Take a close-up of the action figure from the front angle
+Figure_Close,Action Figures,Take a side-angle shot showing the action figure placement
+Figure_Close,Action Figures,Take a cinematic close-up of the action figure beside the setup
+Figure_Close,Action Figures,Take a detailed shot showing the figure displayed on the desk or shelf
+Figure_Close,Action Figures,Take a close-up showing the figure with monitor background blur
+Figure_Close,Action Figures,Capture the action figure from front angle
+Figure_Close,Action Figures,Capture the action figure beside the setup
+Figure_Close,Action Figures,Capture the action figure shelf placement
+Figure_Close,Action Figures,Capture the action figure from side perspective
+Figure_Close,Action Figures,Capture the action figure with monitor background
+Figure_Close,Action Figures,Capture the action figure lighting reflections
+
+Theme_Scene,Theme,Take a wide atmospheric shot focused on the overall room mood
+Theme_Scene,Theme,Take a cinematic environmental shot showing the setup lighting atmosphere
+Theme_Scene,Theme,Take a perspective shot focused on wall decor and ambient lighting
+Theme_Scene,Theme,Take a room-angle shot emphasizing the environment around the setup
+Theme_Scene,Theme,Take a close environmental shot focused on lighting reflections across the room
+Theme_Scene,Theme,Take a balanced room composition showing the setup integrated into the space
+Theme_Scene,Theme,Take a low-light cinematic shot focused on the atmosphere of the setup
+Theme_Scene,Theme,Take a perspective shot showing the relationship between desk and room environment
+Theme_Scene,Theme,Take a wide-angle room shot emphasizing depth and ambiance
+Theme_Scene,Theme,Take a close atmospheric shot focused on environmental details around the setup
+
+Detail_Close,None,Capture the desk edge details from low perspective
+Detail_Close,None,Capture lighting reflections across the desk surface
+Detail_Close,None,Capture the workstation cable management area
+Detail_Close,None,Capture the side profile alignment of desk accessories
+Detail_Close,None,Capture the ambient reflections on hardware surfaces
+Detail_Close,None,Capture the workspace from a shallow depth-of-field perspective
+Detail_Close,None,Capture the workstation textures and materials
+Detail_Close,None,Capture the reflections across glass surfaces
+Detail_Close,None,Capture the lower desk area and under-desk space
+Detail_Close,None,Capture the upper wall and desk relationship
+Detail_Close,None,Capture the workstation from an immersive seated angle
+Detail_Close,None,Capture the workstation from a cinematic tracking perspective
+Detail_Close,None,Capture overlapping desk elements with depth focus
+Detail_Close,None,Capture reflections and lighting interaction between components
+Detail_Close,None,Capture hardware silhouettes against ambient lighting
+Detail_Close,None,Capture the workstation from partial cropped framing
+Detail_Close,None,Capture layered depth between foreground and background objects
+Detail_Close,None,Capture desk accessories from angled composition
+Detail_Close,None,Capture a realistic environmental perspective of the setup
+Detail_Close,None,Capture a clean product-style workstation composition
