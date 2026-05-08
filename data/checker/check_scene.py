@@ -1,7 +1,7 @@
 import csv
 from collections import Counter
 
-CSV_FILE = "scene.csv"
+CSV_FILE = "..\scene.csv"
 
 with open(CSV_FILE, newline="", encoding="utf-8") as f:
     reader = csv.DictReader(f)

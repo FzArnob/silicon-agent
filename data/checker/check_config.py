@@ -1,7 +1,7 @@
 import csv
 from collections import Counter
 
-csv_file = r"c:\xampp\htdocs\silicon-agent\config.csv"
+csv_file = "..\config.csv"
 with open(csv_file, 'r', encoding='utf-8', newline='') as f:
     reader = csv.DictReader(f)
     all_rows = list(reader)
