@@ -41,27 +41,31 @@ def send_prompt_fast(page, text):
 
 
 def wait_for_response(page, timeout=300):
-    """Wait until ChatGPT finishes generating (send button reappears)."""
-    try:
-        page.locator('[data-testid="send-button"]').wait_for(state="visible", timeout=timeout * 1000)
-    except Exception:
-        # Fallback: wait for the textarea to become editable again
-        time.sleep(30)
+    """Wait until ChatGPT finishes generating."""
+    stop_btn = page.locator('button[aria-label="Stop answering"]')
+    voice_btn = page.locator('button[aria-label="Start Voice"]')
+
+    # If stop button is present, wait for it to disappear
+    if stop_btn.is_visible():
+        stop_btn.wait_for(state="hidden", timeout=timeout * 1000)
+
+    # Wait for Start Voice button to appear — confirms generation is complete
+    voice_btn.wait_for(state="visible", timeout=timeout * 1000)
 
 
 def run_session(fast_input=False):
-    master_prompt, batch_prompts, config_row = generate_session_prompts()
+    master_prompt, image_prompts, config_row = generate_session_prompts()
     send = send_prompt_fast if fast_input else send_prompt
     print(f"[Session] Mode: {'fast' if fast_input else 'human-type'}")
     print(f"[Session] Setup: {config_row['Setup Name']}")
-    print(f"[Session] Batches: {len(batch_prompts)}")
+    print(f"[Session] Images: {len(image_prompts)}")
 
     with sync_playwright() as p:
         browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
         context = browser.contexts[0]
         page = context.pages[0]
 
-        # page.goto("https://chatgpt.com")
+        page.goto("https://chatgpt.com")
         time.sleep(3)
 
         # Send master prompt first
@@ -70,24 +74,24 @@ def run_session(fast_input=False):
         print("[Session] Master prompt sent...")
         wait_for_response(page)
 
-        # Wait random 10-30s before starting batches
+        # Wait random 10-30s before starting images
         delay = random.uniform(10, 30)
-        print(f"[Session] Waiting {delay:.0f}s before batches...")
+        print(f"[Session] Waiting {delay:.0f}s before images...")
         time.sleep(delay)
 
-        # Execute batch prompts one by one
-        for i, batch_prompt in enumerate(batch_prompts, 1):
-            print(f"[Session] Sending batch {i}/{len(batch_prompts)}...")
-            send(page, batch_prompt)
+        # Send one prompt per image
+        for i, image_prompt in enumerate(image_prompts, 1):
+            print(f"[Session] Sending image {i}/{len(image_prompts)}...")
+            send(page, image_prompt)
             wait_for_response(page)
 
-            # Take random 2-4min break after each batch (except last)
-            if i < len(batch_prompts):
+            # Take random 2-4min break after each image (except last)
+            if i < len(image_prompts):
                 break_time = random.uniform(120, 240)
                 print(f"[Session] Break: {break_time:.0f}s...")
                 time.sleep(break_time)
 
-        print("[Session] All batches complete.")
+        print("[Session] All images complete.")
         input("Press ENTER to close...")
 
 

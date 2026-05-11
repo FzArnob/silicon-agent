@@ -67,7 +67,7 @@ if %errorlevel% equ 0 (
     echo [OK] Port 9222 already active, skipping Brave launch.
 ) else (
     echo [START] Launching Brave with remote debugging on port 9222...
-    start "" "!BRAVE_PATH!" --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1
+    start "" "!BRAVE_PATH!" --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --user-data-dir="%~dp0brave_profile"
 )
 
 :: --- Wait for CDP endpoint to be ready ---

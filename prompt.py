@@ -100,20 +100,19 @@ def get_eligible_categories(scenes, config_row):
 
 
 def calculate_scene_counts(eligible_categories):
-    """Calculate how many scenes to pick per category using ratio logic."""
+    """Calculate how many images to pick per category.
+    The lowest-count category gets 1 image; others scale proportionally, capped at 4."""
     category_totals = {cat: len(scenes) for cat, scenes in eligible_categories.items()}
 
     if not category_totals:
         return {}
 
     min_count = min(category_totals.values())
-    base = max(1, min_count // 2)
 
     counts = {}
     for cat, total in category_totals.items():
-        target = max(1, round((total / min_count) * base))
-        # Don't exceed available scenes
-        counts[cat] = min(target, total)
+        target = round(total / min_count)  # min category → 1, others scale up
+        counts[cat] = min(4, max(1, target))  # floor 1, cap 4
 
     return counts
 
@@ -128,53 +127,32 @@ def pick_scenes(eligible_categories, counts, config_row):
     return picked
 
 
-def build_batch_prompts(picked_scenes, config_row, batch_size=5):
-    """Build numbered batch prompts from picked scenes."""
-    # Flatten all scenes with category info
+def build_image_prompts(picked_scenes, config_row):
+    """Build one prompt per image from picked scenes, preserving category order from scene.csv."""
     all_scenes = []
     for category, scenes in picked_scenes.items():
-        for scene in scenes:
-            all_scenes.append({
-                "category": category,
-                "dependency": scene["dependency"],
-                "details": scene["details"]
-            })
+        category_scenes = [
+            {"category": category, "dependency": s["dependency"], "details": s["details"]}
+            for s in scenes
+        ]
+        random.shuffle(category_scenes)  # randomize within category only
+        all_scenes.extend(category_scenes)
 
-    # Shuffle for variety
-    random.shuffle(all_scenes)
+    image_prompts = []
+    for scene in all_scenes:
+        prompt = (
+            f"Generate 1 image, 16:9 ratio 4K.\n\n"
+            f"[Scene: {scene['category']}]\n"
+            f"{scene['details']}\n\n"
+            f"Maintain strict visual continuity with the master prompt setup."
+        )
+        image_prompts.append(prompt)
 
-    # Build batches (minimum batch_size per batch)
-    batches = []
-    for i in range(0, len(all_scenes), batch_size):
-        batch = all_scenes[i:i + batch_size]
-        # If remaining is less than batch_size and there's a previous batch,
-        # merge with last batch only if remainder is very small (< 3)
-        if len(batch) < 3 and batches:
-            batches[-1].extend(batch)
-        else:
-            batches.append(batch)
-
-    # Format each batch into a prompt
-    batch_prompts = []
-    for batch_idx, batch in enumerate(batches, 1):
-        lines = [f"Generate the following {len(batch)} images for this session:\n"]
-        for idx, scene in enumerate(batch, 1):
-            ref_line = ""
-            if scene["dependency"] != "None":
-                dep_key = scene["dependency"]
-                dep_value = config_row.get(dep_key, "").strip()
-                ref_line = f" [Reference: {dep_key} = {dep_value}]"
-
-            lines.append(f"{idx}. [{scene['category']}] {scene['details']}{ref_line}")
-
-        lines.append("\nMaintain strict visual continuity with the master prompt setup. Only change camera angle and framing per instruction above.")
-        batch_prompts.append("\n".join(lines))
-
-    return batch_prompts
+    return image_prompts
 
 
 def generate_session_prompts():
-    """Main function: generate master prompt and batch prompts for a session."""
+    """Main function: generate master prompt and image prompts for a session."""
     config_row = pick_config_row()
     master_prompt = build_master_prompt(config_row)
 
@@ -182,16 +160,17 @@ def generate_session_prompts():
     eligible = get_eligible_categories(scenes, config_row)
     counts = calculate_scene_counts(eligible)
     picked = pick_scenes(eligible, counts, config_row)
-    batch_prompts = build_batch_prompts(picked, config_row)
+    image_prompts = build_image_prompts(picked, config_row)
 
-    return master_prompt, batch_prompts, config_row
+    return master_prompt, image_prompts, config_row
 
 
 if __name__ == "__main__":
-    master, batches, config = generate_session_prompts()
+    master, images, config = generate_session_prompts()
     print(f"Setup: {config['Setup Name']}")
     print(f"Master prompt length: {len(master)} chars")
-    print(f"Batches: {len(batches)}")
-    for i, b in enumerate(batches, 1):
-        scene_count = b.count("\n[") + b.count("\n1.")
-        print(f"  Batch {i}: {b[:80]}...")
+    print(f"Images: {len(images)}\n")
+    for i, p in enumerate(images, 1):
+        print(f"--- Image {i} ---")
+        print(p)
+        print()

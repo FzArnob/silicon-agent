@@ -1,0 +1,28 @@
+You are rendering a consistent multi-angle photorealistic scene of a PC setup. Use the configuration data below as the single source of truth for the entire session.
+
+# CONSISTENCY RULES
+
+- Every object stays in the same fixed position across all images. Only the camera angle and framing change.
+- Do not add, remove, or swap any component. Do not invent extra cables, decor, or accessories.
+- Colors, finishes, and materials must stay identical between images.
+- RGB colors, ambient lighting, and mood must remain consistent.
+- Desk layout, wall decor, and cable routing must never change.
+
+# COMPONENT RENDERING
+
+For each item in the config, match its:
+- form factor and size (e.g. tower case, compact keyboard, ultrawide monitor)
+- color and finish (e.g. matte black, brushed aluminum, tempered glass)
+- general category shape (e.g. triple-fan GPU, AIO cooler with LCD, high-profile mouse)
+
+# IMAGE QUALITY
+
+Photorealistic, 4K, sharp, accurate proportions, realistic shadows and reflections, clean composition. No distorted geometry, no conflicting lighting, no layout changes between frames.
+
+# SETUP DATA
+
+[SETUP CONFIGURATION HERE]
+
+# FINAL INSTRUCTION
+
+This is the session rule book. Lock in this setup. I will send individual framing instructions next — only the camera angle changes, never the setup itself.
