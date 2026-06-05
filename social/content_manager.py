@@ -32,13 +32,7 @@ PLATFORMS = [
     {
         "name": "TikTok",
         "url": "https://www.tiktok.com",
-        "logged_in_selector": [
-            '[data-e2e="profile-icon"]',
-            '[data-e2e="avatar"]',
-            'a[href*="/@"]',
-            'div[data-e2e="nav-profile"]',
-            'button[data-e2e="upload-icon"]',
-        ],
+        "logged_in_selector": [ '[data-e2e="profile-icon"]', '[data-e2e="inbox-icon"]' ],
     },
 ]
 
@@ -152,6 +146,7 @@ def _launch_browser(executable: str, profile_dir: str) -> subprocess.Popen:
             "--no-default-browser-check",
             "--disable-session-crashed-bubble",
             "--disable-restore-session-state",
+            "--disable-blink-features=AutomationControlled",
         ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -187,7 +182,16 @@ async def check_platform(page: AsyncPage, platform: dict, ui: LoginUI):
     ui.set_status(name, "checking")
 
     try:
-        await page.goto(platform["url"], wait_until="domcontentloaded", timeout=30000)
+        try:
+            await page.goto(platform["url"], wait_until="domcontentloaded", timeout=30000)
+        except Exception as nav_err:
+            if "net::ERR_HTTP_RESPONSE_CODE_FAILURE" in str(nav_err):
+                print(f"[{name}] Blocked — retrying with JS navigation...")
+                await asyncio.sleep(3)
+                await page.evaluate(f'window.location.href = "{platform["url"]}"')
+                await page.wait_for_load_state("domcontentloaded", timeout=30000)
+            else:
+                raise
         await asyncio.sleep(3)
 
         if await is_logged_in(page, platform["logged_in_selector"]):
