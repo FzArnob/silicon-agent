@@ -165,16 +165,15 @@ async def _wait_for_cdp(timeout: int = 30) -> bool:
 
 async def is_logged_in(page: AsyncPage, selector: str | list, timeout: int = 6000) -> bool:
     selectors = selector if isinstance(selector, list) else [selector]
-    tasks = [
-        asyncio.ensure_future(
-            page.wait_for_selector(s, timeout=timeout)
-        )
-        for s in selectors
-    ]
-    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-    for t in pending:
-        t.cancel()
-    return any(not t.exception() for t in done if not t.cancelled())
+
+    for s in selectors:
+        try:
+            if await page.locator(s).count() > 0:
+                return True
+        except Exception:
+            continue
+
+    return False
 
 
 async def check_platform(page: AsyncPage, platform: dict, ui: LoginUI):
