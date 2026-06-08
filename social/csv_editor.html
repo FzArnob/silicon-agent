@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Editor</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #eef2f7;
+            --bg-container: #fff;
+            --bg-header: #1a3558;
+            --bg-toolbar: #f3f6fb;
+            --border-toolbar: #d8e0ea;
+            --bg-th: #eef2f7;
+            --color-th: #374151;
+            --border-th: #d8e0ea;
+            --bg-td: #fff;
+            --bg-td-even: #f8fafc;
+            --bg-td-hover: #eff6ff;
+            --border-td: #e2e8f0;
+            --bg-row-num: #eef2f7;
+            --color-row-num: #9ca3af;
+            --border-row-num: #d8e0ea;
+            --bg-action-cell: #f8fafc;
+            --bg-btn: #fff;
+            --color-btn: #2d3748;
+            --border-btn: #c8d1db;
+            --btn-hover-bg: #eef2f7;
+            --btn-hover-border: #a0aec0;
+            --color-textarea: #1a202c;
+            --bg-textarea-focus: #fff;
+            --outline-focus: #3b82f6;
+            --divider: #d0d7de;
+            --drag-handle: #c0c8d4;
+            --col-btn-hover-bg: #fde8e8;
+            --loading-bg: rgba(15,23,42,0.45);
+            --loading-box: white;
+            --loading-text: #374151;
+            --loading-ring: #e2e8f0;
+            --shadow-btn: rgba(0,0,0,0.06);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #1a1a2e;
+            --bg-container: #16213e;
+            --bg-header: #0f3460;
+            --bg-toolbar: #1a1a2e;
+            --border-toolbar: #2a2a4a;
+            --bg-th: #1e1e38;
+            --color-th: #c8cdd5;
+            --border-th: #2a2a4a;
+            --bg-td: #16213e;
+            --bg-td-even: #1a2744;
+            --bg-td-hover: #1e3354;
+            --border-td: #2a2a4a;
+            --bg-row-num: #1e1e38;
+            --color-row-num: #6b7280;
+            --border-row-num: #2a2a4a;
+            --bg-action-cell: #1a2744;
+            --bg-btn: #1e1e38;
+            --color-btn: #c8cdd5;
+            --border-btn: #3a3a5a;
+            --btn-hover-bg: #2a2a4a;
+            --btn-hover-border: #5a5a7a;
+            --color-textarea: #e2e8f0;
+            --bg-textarea-focus: #1e3354;
+            --outline-focus: #3b82f6;
+            --divider: #3a3a5a;
+            --drag-handle: #4a4a6a;
+            --col-btn-hover-bg: #3b1c1c;
+            --loading-bg: rgba(0,0,0,0.6);
+            --loading-box: #1e1e38;
+            --loading-text: #c8cdd5;
+            --loading-ring: #2a2a4a;
+            --shadow-btn: rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-body);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-container);
+        }
+
+        /* ── Top bar ── */
+        .header {
+            background: var(--bg-header);
+            color: white;
+            padding: 0 20px;
+            height: 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 1.05em;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* ── Toolbar ── */
+        .controls {
+            padding: 7px 14px;
+            background: var(--bg-toolbar);
+            border-bottom: 1px solid var(--border-toolbar);
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .controls-divider {
+            width: 1px;
+            height: 22px;
+            background: var(--divider);
+            margin: 0 2px;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 5px 13px;
+            border: 1px solid var(--border-btn);
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+            background: var(--bg-btn);
+            color: var(--color-btn);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 1px 2px var(--shadow-btn);
+        }
+
+        .btn:hover {
+            background: var(--btn-hover-bg);
+            border-color: var(--btn-hover-border);
+        }
+
+        .btn .material-icons { font-size: 1em; }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            border-color: #1d4ed8;
+        }
+        .btn-primary:hover { background: #1d4ed8; border-color: #1e40af; }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+            border-color: #15803d;
+        }
+        .btn-success:hover { background: #15803d; border-color: #166534; }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border-color: #b91c1c;
+        }
+        .btn-danger:hover { background: #b91c1c; border-color: #991b1b; }
+
+        #fileInput { display: none; }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8em;
+            font-weight: 500;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.4);
+        }
+        .theme-toggle .material-icons { font-size: 1.15em; }
+
+        /* ── Table wrapper ── */
+        .table-container {
+            flex: 1;
+            overflow: auto;
+            background: var(--bg-container);
+        }
+
+        table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* ── Header row ── */
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 0;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.78em;
+            border: 1px solid var(--border-th);
+            background: var(--bg-th);
+            color: var(--color-th);
+            white-space: nowrap;
+            position: relative;
+            user-select: none;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 8px;
+            min-width: 110px;
+        }
+
+        .header-text {
+            flex: 1;
+            cursor: text;
+            padding: 2px 3px;
+            border-radius: 3px;
+            min-height: 1.2em;
+            outline: none;
+        }
+
+        .header-text:focus {
+            background: var(--bg-textarea-focus);
+            box-shadow: 0 0 0 2px var(--outline-focus);
+        }
+
+        .column-actions { display: flex; gap: 1px; opacity: 0; transition: opacity 0.15s; }
+        th:hover .column-actions { opacity: 1; }
+
+        .column-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 3px;
+            color: var(--color-row-num);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+        }
+        .column-btn:hover { background: var(--col-btn-hover-bg); color: #dc2626; }
+        .column-btn .material-icons { font-size: 0.95em; }
+
+        th.drag-over { background: var(--bg-td-hover) !important; border-left: 2px solid #2563eb; }
+        th[draggable] { cursor: grab; }
+        th[draggable]:active { cursor: grabbing; }
+
+        .drag-handle {
+            color: var(--drag-handle);
+            cursor: grab;
+            font-size: 1em !important;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        th:hover .drag-handle { opacity: 1; }
+
+        /* ── Body cells ── */
+        td {
+            padding: 0;
+            border: 1px solid var(--border-td);
+            background: var(--bg-td);
+            vertical-align: middle;
+        }
+
+        tbody tr:nth-child(even) td { background: var(--bg-td-even); }
+        tbody tr:hover td { background: var(--bg-td-hover) !important; }
+
+        textarea {
+            width: 100%;
+            min-width: 110px;
+            padding: 5px 8px;
+            border: none;
+            font-size: 0.82em;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: transparent;
+            color: var(--color-textarea);
+            resize: none;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+        textarea:focus {
+            outline: 2px solid var(--outline-focus);
+            outline-offset: -2px;
+            background: var(--bg-textarea-focus);
+        }
+
+        .cell {
+            padding: 5px 8px;
+            font-size: 0.82em;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.4;
+            color: var(--color-textarea);
+            cursor: text;
+            min-height: 22px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 450px;
+        }
+
+        .progress-wrap { margin-top: 10px; }
+        .progress-bar {
+            width: 220px;
+            height: 5px;
+            background: var(--loading-ring);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.12s ease;
+        }
+        .progress-info {
+            font-size: 0.72em;
+            color: var(--color-row-num);
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        /* ── Row number ── */
+        td.row-number {
+            background: var(--bg-row-num) !important;
+            color: var(--color-row-num);
+            font-size: 0.72em;
+            text-align: center;
+            font-weight: 600;
+            min-width: 36px;
+            padding: 5px 6px;
+            border-right: 2px solid var(--border-row-num);
+            white-space: nowrap;
+        }
+
+        th.row-number {
+            min-width: 36px;
+            text-align: center;
+            background: var(--bg-th);
+        }
+
+        /* ── Row action cell ── */
+        td.action-cell {
+            background: var(--bg-action-cell) !important;
+            border-right: 2px solid var(--border-row-num);
+            padding: 2px 4px;
+            white-space: nowrap;
+        }
+
+        tbody tr:hover td.action-cell { background: var(--bg-td-hover) !important; }
+
+        .action-btns {
+            display: none;
+            gap: 1px;
+            justify-content: center;
+        }
+        tr:hover .action-btns { display: flex; }
+        tr:hover [data-rownum] { display: none; }
+
+        .row-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 3px 4px;
+            border-radius: 4px;
+            color: var(--color-row-num);
+            display: flex;
+            align-items: center;
+        }
+        .row-btn .material-icons { font-size: 0.95em; }
+        .row-btn.copy:hover { background: #dbeafe; color: #2563eb; }
+        .row-btn.del:hover  { background: #fee2e2; color: #dc2626; }
+
+        /* ── Loading overlay ── */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--loading-bg);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-overlay.show { display: flex; }
+
+        .loading-content {
+            background: var(--loading-box);
+            padding: 20px 28px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid var(--loading-ring);
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 0.95em;
+            color: var(--loading-text);
+            font-weight: 500;
+        }
+
+        .status { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="material-icons" style="font-size:1.1em;">table_chart</span> CSV Editor</h1>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme"><span class="material-icons" id="themeIcon">dark_mode</span></button>
+                <label for="fileInput" class="btn btn-primary"><span class="material-icons">folder_open</span> Load CSV</label>
+                <input type="file" id="fileInput" accept=".csv">
+                <button class="btn btn-success" onclick="downloadCSV()"><span class="material-icons">download</span> Download</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="addRow()"><span class="material-icons">add</span> Add Row</button>
+            <button class="btn" onclick="addColumn()"><span class="material-icons">view_column</span> Add Column</button>
+            <div class="controls-divider"></div>
+            <button class="btn btn-danger" onclick="clearAll()"><span class="material-icons">delete_sweep</span> Clear All</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <div>
+                    <div class="loading-text" id="loadingText">Loading...</div>
+                    <div class="progress-wrap">
+                        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                        <div class="progress-info" id="progressInfo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="csvTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let headers = [];
+        let dragSrcIndex = null;
+        let renderRAF = null;
+
+        // ── CSV Parsing ──
+        function parseCSV(csv) {
+            showLoading(true, 'Parsing CSV...');
+            setTimeout(() => {
+                const allRows = parseCSVFull(csv);
+                if (allRows.length === 0) { showLoading(false); return; }
+                headers = allRows[0].map(h => h.trim());
+                csvData = allRows.slice(1).filter(r => r.some(c => c !== ''));
+                updateProgress(100, csvData.length + ' rows parsed');
+                renderTable();
+            }, 60);
+        }
+
+        function parseCSVFull(csv) {
+            const result = [];
+            let row = [];
+            let current = '';
+            let inQuotes = false;
+            let i = 0;
+            while (i < csv.length) {
+                const ch = csv[i];
+                if (inQuotes) {
+                    if (ch === '"') {
+                        if (csv[i + 1] === '"') { current += '"'; i += 2; }
+                        else { inQuotes = false; i++; }
+                    } else { current += ch; i++; }
+                } else {
+                    if (ch === '"') { inQuotes = true; i++; }
+                    else if (ch === ',') { row.push(current); current = ''; i++; }
+                    else if (ch === '\r') { i++; }
+                    else if (ch === '\n') { row.push(current); current = ''; result.push(row); row = []; i++; }
+                    else { current += ch; i++; }
+                }
+            }
+            if (current !== '' || row.length > 0) { row.push(current); result.push(row); }
+            return result;
+        }
+
+        // ── HTML Helpers ──
+        function escapeHtml(s) {
+            if (!s) return '';
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function buildRowHtml(i) {
+            const row = csvData[i], cols = headers.length;
+            let h = '<tr data-row="' + i + '">';
+            h += '<td style="width:70px;min-width:70px;background:var(--bg-row-num);border:1px solid var(--border-th);border-right:2px solid var(--border-row-num);padding:3px 4px;vertical-align:middle;text-align:center;">';
+            h += '<span data-rownum="1" style="font-size:0.72em;color:var(--color-row-num);font-weight:600;line-height:1;">' + (i + 1) + '</span>';
+            h += '<div class="action-btns" style="justify-content:center;">';
+            h += '<button class="row-btn copy" data-action="copy" title="Copy row below"><span class="material-icons">content_copy</span></button>';
+            h += '<button class="row-btn del" data-action="delete" title="Delete row"><span class="material-icons">delete</span></button>';
+            h += '</div></td>';
+            for (let j = 0; j < cols; j++) {
+                const v = j < row.length ? row[j] : '';
+                h += '<td data-col="' + j + '"><div class="cell">' + escapeHtml(v) + '</div></td>';
+            }
+            return h + '</tr>';
+        }
+
+        // ── Render Header ──
+        function renderHeader() {
+            let h = '<tr><th style="width:70px;min-width:70px;background:var(--bg-th);border:1px solid var(--border-th);text-align:center;font-size:0.75em;color:var(--color-row-num);font-weight:600;padding:5px 4px;">#</th>';
+            for (let i = 0; i < headers.length; i++) {
+                h += '<th draggable="true" ondragstart="handleDragStart(event,' + i + ')" ondragover="handleDragOver(event,' + i + ')" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event,' + i + ')" ondragend="handleDragEnd(event)"><div class="header-content"><span class="material-icons drag-handle" title="Drag to reorder">drag_indicator</span><span class="header-text" contenteditable="true" onblur="updateHeader(' + i + ',this.textContent)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" ondragstart="event.stopPropagation()">' + escapeHtml(headers[i]) + '</span><div class="column-actions"><button class="column-btn" onclick="deleteColumn(' + i + ')" title="Delete column"><span class="material-icons" style="font-size:0.9em;">close</span></button></div></div></th>';
+            }
+            document.getElementById('tableHead').innerHTML = h + '</tr>';
+        }
+
+        // ── Render Table (chunked for large datasets) ──
+        function renderTable() {
+            if (renderRAF) { cancelAnimationFrame(renderRAF); renderRAF = null; }
+            renderHeader();
+            const tbody = document.getElementById('tableBody');
+            if (csvData.length === 0) { tbody.innerHTML = ''; showLoading(false); return; }
+
+            // Small datasets: render all at once (instant)
+            if (csvData.length <= 300) {
+                let html = '';
+                for (let i = 0; i < csvData.length; i++) html += buildRowHtml(i);
+                tbody.innerHTML = html;
+                showLoading(false);
+                return;
+            }
+
+            // Large datasets: chunked render with progress
+            tbody.innerHTML = '';
+            const CHUNK = 60, total = csvData.length;
+            let idx = 0;
+            showLoading(true, 'Rendering ' + total + ' rows...');
+
+            function insertChunk() {
+                const end = Math.min(idx + CHUNK, total);
+                let html = '';
+                for (; idx < end; idx++) html += buildRowHtml(idx);
+                tbody.insertAdjacentHTML('beforeend', html);
+                const pct = Math.round(idx / total * 100);
+                updateProgress(pct, idx + ' of ' + total + ' rows');
+                if (idx < total) {
+                    renderRAF = requestAnimationFrame(insertChunk);
+                } else {
+                    renderRAF = null;
+                    showLoading(false);
+                }
+            }
+            renderRAF = requestAnimationFrame(insertChunk);
+        }
+
+        // ── Click-to-Edit (Event Delegation) ──
+        document.getElementById('tableBody').addEventListener('click', function(e) {
+            // Row action buttons
+            const btn = e.target.closest('[data-action]');
+            if (btn) {
+                const ri = parseInt(btn.closest('tr').dataset.row);
+                if (btn.dataset.action === 'copy') copyRowBelow(ri);
+                else if (btn.dataset.action === 'delete') deleteRow(ri);
+                return;
+            }
+            // Cell editing
+            const td = e.target.closest('td[data-col]');
+            if (!td || td.querySelector('textarea')) return;
+            const tr = td.closest('tr');
+            const ri = parseInt(tr.dataset.row);
+            const ci = parseInt(td.dataset.col);
+
+            // Close any previous editor
+            const prev = document.querySelector('#tableBody textarea');
+            if (prev) prev.blur();
+
+            const val = (ri < csvData.length && ci < csvData[ri].length) ? csvData[ri][ci] : '';
+            const ta = document.createElement('textarea');
+            ta.value = val;
+            ta.rows = 1;
+            td.textContent = '';
+            td.appendChild(ta);
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+            ta.focus();
+
+            ta.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+            ta.addEventListener('blur', function() {
+                while (csvData[ri].length <= ci) csvData[ri].push('');
+                csvData[ri][ci] = this.value;
+                const div = document.createElement('div');
+                div.className = 'cell';
+                div.textContent = this.value;
+                td.textContent = '';
+                td.appendChild(div);
+            });
+            ta.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Escape') this.blur();
+                if (ev.key === 'Tab') {
+                    ev.preventDefault();
+                    this.blur();
+                    const nc = ev.shiftKey ? ci - 1 : ci + 1;
+                    if (nc >= 0 && nc < headers.length) {
+                        const nt = tr.querySelector('td[data-col="' + nc + '"]');
+                        if (nt) setTimeout(() => nt.click(), 10);
+                    }
+                }
+            });
+        });
+
+        // ── Column Drag & Drop ──
+        function handleDragStart(e, index) {
+            dragSrcIndex = index;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', index);
+            e.currentTarget.style.opacity = '0.5';
+        }
+
+        function handleDragOver(e, index) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (index !== dragSrcIndex) e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+
+        function handleDrop(e, targetIndex) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
+            const movedHeader = headers.splice(dragSrcIndex, 1)[0];
+            headers.splice(targetIndex, 0, movedHeader);
+            csvData.forEach(row => {
+                const movedCell = row.splice(dragSrcIndex, 1)[0];
+                row.splice(targetIndex, 0, movedCell);
+            });
+            dragSrcIndex = null;
+            renderTable();
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.style.opacity = '';
+            document.querySelectorAll('th').forEach(th => th.classList.remove('drag-over'));
+            dragSrcIndex = null;
+        }
+
+        // ── Data Operations ──
+        function updateHeader(index, newHeader) { headers[index] = newHeader.trim(); }
+
+        function addRow() {
+            csvData.push(headers.map(() => ''));
+            const tbody = document.getElementById('tableBody');
+            tbody.insertAdjacentHTML('beforeend', buildRowHtml(csvData.length - 1));
+            document.querySelector('.table-container').scrollTop = 999999;
+        }
+
+        function addColumn() {
+            const columnName = prompt('Enter column name:', 'New Column');
+            if (columnName !== null && columnName.trim() !== '') {
+                headers.push(columnName.trim());
+                csvData.forEach(row => row.push(''));
+                renderTable();
+            }
+        }
+
+        function deleteRow(rowIndex) {
+            if (confirm('Delete this row?')) {
+                csvData.splice(rowIndex, 1);
+                renderTable();
+            }
+        }
+
+        function copyRowBelow(rowIndex) {
+            csvData.splice(rowIndex + 1, 0, [...csvData[rowIndex]]);
+            renderTable();
+        }
+
+        function deleteColumn(columnIndex) {
+            if (confirm('Delete column "' + headers[columnIndex] + '"?')) {
+                headers.splice(columnIndex, 1);
+                csvData.forEach(row => row.splice(columnIndex, 1));
+                renderTable();
+            }
+        }
+
+        function clearAll() {
+            if (confirm('Clear all data? This cannot be undone.')) {
+                headers = ['Column 1'];
+                csvData = [['']];
+                renderTable();
+            }
+        }
+
+        // ── Download ──
+        function downloadCSV() {
+            const parts = [headers.join(',')];
+            for (let i = 0; i < csvData.length; i++) {
+                parts.push(csvData[i].map(cell => {
+                    if (cell.includes(',') || cell.includes('"') || cell.includes('\n') || cell.includes('\r'))
+                        return '"' + cell.replace(/"/g, '""') + '"';
+                    return cell;
+                }).join(','));
+            }
+            const blob = new Blob([parts.join('\n') + '\n'], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pc_build.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // ── Loading & Progress ──
+        function showLoading(show, text) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                document.getElementById('loadingText').textContent = text || 'Loading...';
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('progressInfo').textContent = '';
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
+            }
+        }
+
+        function updateProgress(pct, text) {
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressInfo').textContent = text || '';
+        }
+
+        function showStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.classList.add('show');
+            setTimeout(() => status.classList.remove('show'), 2000);
+        }
+
+        // ── File Input ──
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => parseCSV(event.target.result);
+                reader.readAsText(file);
+            }
+        });
+
+        // ── Theme Toggle ──
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('themeIcon').textContent = isDark ? 'dark_mode' : 'light_mode';
+            document.cookie = 'csv_editor_theme=' + newTheme + ';path=/;max-age=31536000;SameSite=Lax';
+        }
+
+        function loadTheme() {
+            const match = document.cookie.match(/csv_editor_theme=(light|dark)/);
+            const theme = match ? match[1] : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById('themeIcon').textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+        }
+
+        loadTheme();
+
+        // Initialize
+        headers = ['Column 1', 'Column 2', 'Column 3'];
+        csvData = [['', '', '']];
+        renderTable();
+    </script>
+</body>
+</html>
