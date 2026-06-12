@@ -1,0 +1,18 @@
+{
+  "month": "2026-07",
+  "timezone": "Asia/Dhaka",
+  "channel_name": "Run Fz Run",
+  "category": "Gaming",
+  "sub_category_name": "Valorant",
+  "target_audience": ["Japan", "Korea", "India", "Indonesia", "Philippines", "Bangladesh"],
+  "content_type": "Shorts, Musical Gameplay Montages",
+  "posts_per_week": 7,
+  "is_series": true,
+  "series_name": "Neon - Valorant Music Montages",
+  "goal": "Maximum Reach",
+  "tone": "Energetic, Engaging, Trendy, Fun",
+  "duration_range_seconds": "45-120",
+  "language": "English",
+  "storage_path": "D:/Content/RunFzRun/2026-07",
+  "special_instructions": "Music-driven Valorant Neon montage series featuring viewer-requested songs. Focused on strong first 2-second hooks, high shareability, and alignment with current platform trends. Choose upload time based on target audience's peak activity hours and adjust it for the timezone provided."
+}
