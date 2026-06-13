@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plansheet Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="label">Month Selection</span>
+        <button id="monthButton" class="btn btn-outline" type="button">----</button>
+      </div>
+
+      <div class="topbar-right">
+        <label class="autopilot-wrap" for="autoPilotToggle">
+          <span>Auto Pilot</span>
+          <span class="switch">
+            <input id="autoPilotToggle" type="checkbox" aria-label="Auto Pilot">
+            <span class="slider"></span>
+          </span>
+        </label>
+
+        <div class="actions">
+          <button id="generateButton" class="btn btn-primary" type="button">Generate Plansheet</button>
+          <button id="removeButton" class="btn btn-danger hidden" type="button">Remove</button>
+          <button id="undoButton" class="btn btn-outline hidden" type="button">Undo</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="statusbar">
+      <div id="statusText" class="status-text">Loading...</div>
+      <div id="loaderArea" class="loader-area">
+        <span id="spinner" class="spinner hidden" aria-hidden="true"></span>
+        <button id="saveButton" class="save-pill hidden" type="button" title="Save (Ctrl+S)">💾 Save</button>
+      </div>
+    </section>
+
+    <main class="table-section">
+      <div id="skeleton" class="skeleton hidden" aria-hidden="true">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+
+      <div id="emptyState" class="empty-state hidden">
+        <h1>Plansheet</h1>
+        <p>No plansheet found for this month. Generate one to begin editing.</p>
+      </div>
+
+      <div id="tableWrap" class="table-wrap hidden">
+        <table id="plansheetTable" class="plansheet-table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div id="monthModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="monthModalTitle">
+    <div class="modal-panel">
+      <h2 id="monthModalTitle">Select Month</h2>
+      <input id="monthInput" type="month">
+      <div class="modal-actions">
+        <button id="monthCancel" class="btn btn-outline" type="button">Cancel</button>
+        <button id="monthApply" class="btn btn-primary" type="button">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastHost" class="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

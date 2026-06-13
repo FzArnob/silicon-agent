@@ -1,10 +1,17 @@
 {
-  "month": "2026-06",
+  "month": "2026-08",
   "timezone": "Asia/Dhaka",
   "channel_name": "Run Fz Run",
   "category": "Gaming",
   "sub_category_name": "Valorant",
-  "target_audience": ["Japan", "Korea", "India", "Indonesia", "Philippines", "Bangladesh"],
+  "target_audience": [
+    "Japan",
+    "Korea",
+    "India",
+    "Indonesia",
+    "Philippines",
+    "Bangladesh"
+  ],
   "content_type": "Shorts, Musical Gameplay Montages",
   "posts_per_week": 7,
   "is_series": true,
