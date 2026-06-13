@@ -16,22 +16,30 @@ EXPECTED_HEADERS = [
     "post_id", "upload_date", "upload_time",
     "title", "description", "hashtags", "keywords",
     "category", "sub_category_name", "series_name", "episode_number",
-    "video_local_path", "thumbnail_local_path",
+    "landscape_video_path", "landscape_thumbnail_path",
+    "portrait_video_path", "portrait_thumbnail_path",
     "ai_flag", "kids_flag", "status"
 ]
 
 
 # ─── Step 1: Compute upload dates (deterministic) ───────────────────────────
-def compute_upload_dates(month_str: str, posts_per_week: int) -> list[str]:
+def compute_upload_dates(month_str: str, posts_per_week: int, first_day=None, last_day=None) -> list[str]:
     """
     Distribute `posts_per_week` uploads evenly across the given month.
     Returns a sorted list of 'YYYY-MM-DD' strings.
+    
+    Args:
+        month_str: Month string in 'YYYY-MM' format (used if first_day/last_day not provided)
+        posts_per_week: Number of posts per week
+        first_day: Optional start date (defaults to 1st of month if not provided)
+        last_day: Optional end date (defaults to last day of month if not provided)
     """
-    year, month = map(int, month_str.split("-"))
-    days_in_month = calendar.monthrange(year, month)[1]
-
-    first_day = date(year, month, 1)
-    last_day = date(year, month, days_in_month)
+    # Use provided dates or compute from month string
+    if first_day is None or last_day is None:
+        year, month = map(int, month_str.split("-"))
+        days_in_month = calendar.monthrange(year, month)[1]
+        first_day = date(year, month, 1)
+        last_day = date(year, month, days_in_month)
 
     all_dates = []
     current = first_day
@@ -285,8 +293,10 @@ def build_csv_rows(
 
         # Build deterministic paths
         ep_folder = f"EP{episode_num:03d}"
-        video_path = os.path.join(storage_path, "videos", ep_folder, "video.mp4")
-        thumb_path = os.path.join(storage_path, "thumbnails", ep_folder, "thumbnail.png")
+        landscape_video_path = os.path.join(storage_path, "videos", ep_folder, "landscape.mp4")
+        landscape_thumb_path = os.path.join(storage_path, "thumbnails", ep_folder, "landscape.png")
+        portrait_video_path = os.path.join(storage_path, "videos", ep_folder, "portrait.mp4")
+        portrait_thumb_path = os.path.join(storage_path, "thumbnails", ep_folder, "portrait.png")
 
         row = {
             "post_id": str(uuid.uuid4()),
@@ -300,8 +310,10 @@ def build_csv_rows(
             "sub_category_name": sub_category,
             "series_name": series_name,
             "episode_number": episode_num,
-            "video_local_path": video_path,
-            "thumbnail_local_path": thumb_path,
+            "landscape_video_path": landscape_video_path,
+            "landscape_thumbnail_path": landscape_thumb_path,
+            "portrait_video_path": portrait_video_path,
+            "portrait_thumbnail_path": portrait_thumb_path,
             "ai_flag": "FALSE",
             "kids_flag": "FALSE",
             "status": "PLANNED"
@@ -336,11 +348,21 @@ def main():
     month_str = json_data.get("month", "2026-07")
     posts_per_week = json_data.get("posts_per_week", 7)
 
+    # Handle current month: start from next day instead of 1st
+    if month_str == date.today().strftime("%Y-%m"):
+        today = date.today()
+        first_day = today + timedelta(days=1)
+        last_day = date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+        month_str = f"{today.year}-{today.month:02d}"
+    else:
+        first_day = date(int(month_str.split("-")[0]), int(month_str.split("-")[1]), 1)
+        last_day = date(int(month_str.split("-")[0]), int(month_str.split("-")[1]), calendar.monthrange(int(month_str.split("-")[0]), int(month_str.split("-")[1]))[1])
+
     print(f"Planning content for: {month_str}")
     print(f"Posts per week: {posts_per_week}")
 
-    # 2. Compute upload dates (deterministic)
-    upload_dates = compute_upload_dates(month_str, posts_per_week)
+    # 2. Compute upload dates (deterministic) - uses first_day and last_day from main
+    upload_dates = compute_upload_dates(month_str, posts_per_week, first_day, last_day)
     total_posts = len(upload_dates)
     print(f"Total posts scheduled: {total_posts}")
     print(f"Dates: {upload_dates[:5]}... (showing first 5)")

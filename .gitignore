@@ -1,4 +1,5 @@
 __pycache__/
 brave_profile/
 browsers/
+.vscode/
 contents/
