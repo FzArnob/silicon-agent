@@ -1,0 +1,15 @@
+{
+  "name": "silicon-agent-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "electron/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "backend": "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000",
+    "import:csv": "python backend/scripts/import_csv_to_sqlite.py"
+  },
+  "devDependencies": {
+    "electron": "^42.4.0"
+  }
+}

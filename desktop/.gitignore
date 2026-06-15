@@ -1,0 +1,8 @@
+node_modules/
+data/app.db
+backend/__pycache__/
+backend/app/__pycache__/
+backend/app/routes/__pycache__/
+backend/app/services/__pycache__/
+backend/scripts/__pycache__/
+*.pyc
