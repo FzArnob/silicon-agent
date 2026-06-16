@@ -5,18 +5,27 @@ import json
 import os
 import re
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any
 
 import requests
-
-from .defaults import REQUIRED_COLUMNS
 
 LLM_API_URL = os.getenv("LLM_API_URL", "http://localhost:2000")
 LLM_MODEL = os.getenv("LLM_MODEL", "google/gemma-4-e2b")
 
 
-def compute_upload_dates(month_str: str, posts_per_week: int, first_day: date | None = None, last_day: date | None = None) -> list[str]:
+def _log_llm_response(raw_response: str) -> None:
+    logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
+    os.makedirs(logs_dir, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = os.path.join(logs_dir, f"execution_{timestamp}.log")
+
+    with open(log_path, "w", encoding="utf-8") as log_file:
+        log_file.write(raw_response)
+
+
+def compute_post_slots(month_str: str, posts_per_week: int, first_day: date | None = None, last_day: date | None = None) -> list[str]:
     if first_day is None or last_day is None:
         year, month = map(int, month_str.split("-"))
         days_in_month = calendar.monthrange(year, month)[1]
@@ -38,23 +47,28 @@ def compute_upload_dates(month_str: str, posts_per_week: int, first_day: date | 
             available_days.append(day)
             day += timedelta(days=1)
 
-        count = min(posts_per_week, len(available_days))
-        if count == len(available_days):
-            chosen = available_days
+        count = posts_per_week
+        if count <= len(available_days):
+            if count == len(available_days):
+                chosen = available_days
+            else:
+                step = len(available_days) / count
+                chosen = [available_days[int(index * step)] for index in range(count)]
         else:
+            # When requested posts exceed days in a week slice, distribute multiple
+            # posts per day by assigning slots across available days.
             step = len(available_days) / count
             chosen = [available_days[int(index * step)] for index in range(count)]
 
         all_dates.extend(chosen)
         current = week_start + timedelta(days=7)
 
-    unique_dates = sorted(set(all_dates))
-    return [day.isoformat() for day in unique_dates]
+    return [day.isoformat() for day in all_dates]
 
 
-def build_llm_prompt(plan_input: dict[str, Any], upload_dates: list[str]) -> str:
-    total_posts = len(upload_dates)
-    dates_list = ", ".join(upload_dates)
+def build_llm_prompt(plan_input: dict[str, Any], total_posts: int, first_day: date, last_day: date) -> str:
+    posts_per_week = int(plan_input.get("posts_per_week") or 7)
+    month_window = f"{first_day.isoformat()} to {last_day.isoformat()}"
 
     channel = str(plan_input.get("channel_name", ""))
     channel_lower = channel.lower().replace(" ", "")
@@ -84,11 +98,17 @@ CONTEXT:
 - Special instructions: {plan_input.get('special_instructions')}
 
 TASK:
-Generate content metadata for exactly {total_posts} posts with these upload dates:
-{dates_list}
+Generate content metadata for exactly {total_posts} posts.
+
+POSTING CADENCE:
+- Required posts per week: {posts_per_week}
+- Allowed upload date window: {month_window}
+- You decide date_time.
+- When posts_per_week is greater than 7, multiple posts on the same date are expected.
+- If multiple posts are placed on the same date, use different time values for each post on that date.
 
 For EACH post, provide:
-1. upload_time - HH:mm format in {plan_input.get('timezone')} timezone, optimized for peak activity across target regions
+1. date_time - YYYY-MM-DD HH:mm format in {plan_input.get('timezone')} timezone, optimized for peak activity across target regions
 2. title - catchy, engaging, under 80 characters, include song/music references for variety
 3. description - 2-3 sentences, engaging, include call-to-action, under 300 characters
 4. hashtags - 8-15 space-separated hashtags starting with #. MUST include these channel tags: {channel_tag_hint}. Also include relevant gaming/content hashtags.
@@ -96,10 +116,11 @@ For EACH post, provide:
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON array with exactly {total_posts} objects. No markdown, no code fences, no explanation.
-Each object must have exactly these keys: "upload_date", "upload_time", "title", "description", "hashtags", "keywords"
+Each object must have exactly these keys: "date_time", "title", "description", "hashtags", "keywords"
+Every date_time value must be inside the allowed upload date window.
 
 Example of ONE object:
-{{"upload_date":"2026-07-01","upload_time":"18:30","title":"Neon Goes Crazy on Ascent | Montage","description":"Watch Neon dominate with insane plays. Drop a like if you enjoy! #valorant","hashtags":"#runfzrun #runfz #fzrun #fz #valorant #neon #montage #gaming","keywords":"valorant neon montage gaming highlights gameplay"}}
+{{"date_time":"2026-07-01 18:30","title":"Neon Goes Crazy on Ascent | Montage","description":"Watch Neon dominate with insane plays. Drop a like if you enjoy! #valorant","hashtags":"#runfzrun #runfz #fzrun #fz #valorant #neon #montage #gaming","keywords":"valorant neon montage gaming highlights gameplay"}}
 
 Return the full JSON array now. Ensure valid JSON. Double-check every quote and comma."""
     return prompt
@@ -168,6 +189,8 @@ def parse_llm_response(raw_text: str, expected_count: int) -> list[dict[str, Any
     json_str = text[first_bracket:last_bracket + 1]
     json_str = re.sub(r',\s*}', '}', json_str)
     json_str = re.sub(r',\s*]', ']', json_str)
+    # Repair a frequent model formatting issue where adjacent objects miss a comma.
+    json_str = re.sub(r'}\s*{', '},{', json_str)
 
     try:
         data = json.loads(json_str)
@@ -177,14 +200,23 @@ def parse_llm_response(raw_text: str, expected_count: int) -> list[dict[str, Any
     if not isinstance(data, list):
         return None
 
-    if len(data) != expected_count:
-        data = data[:expected_count]
+    # Keep exactly what the LLM returned; do not pad or synthesize missing items.
 
-    required_keys = {"upload_date", "upload_time", "title", "description", "hashtags", "keywords"}
+    required_keys = {"date_time", "title", "description", "hashtags", "keywords"}
     validated: list[dict[str, Any]] = []
     for item in data:
         if not isinstance(item, dict):
             continue
+        # Backward compatibility if model returns split date/time keys.
+        if not str(item.get("date_time", "")).strip():
+            upload_date = str(item.get("upload_date", "")).strip()
+            upload_time = str(item.get("upload_time", "")).strip()
+            if upload_date:
+                item["date_time"] = f"{upload_date} {upload_time or '18:00'}"
+
+        if isinstance(item.get("date_time"), str):
+            item["date_time"] = item["date_time"].strip().replace("T", " ")
+
         missing = required_keys - set(item.keys())
         for key in missing:
             item[key] = ""
@@ -193,35 +225,25 @@ def parse_llm_response(raw_text: str, expected_count: int) -> list[dict[str, Any
     return validated
 
 
-def build_rows(plan_input: dict[str, Any], upload_dates: list[str], llm_items: list[dict[str, Any]], start_episode: int = 1) -> list[dict[str, Any]]:
+def build_rows(plan_input: dict[str, Any], llm_items: list[dict[str, Any]], start_episode: int = 1) -> list[dict[str, Any]]:
     storage_path = str(plan_input.get("storage_path", ""))
     category = str(plan_input.get("category", ""))
     sub_category = str(plan_input.get("sub_category_name", ""))
     series_name = str(plan_input.get("series_name", "")) if plan_input.get("is_series") else ""
 
     rows: list[dict[str, Any]] = []
-    for index, upload_date in enumerate(upload_dates):
+    for index, llm_row in enumerate(llm_items):
         episode_number = start_episode + index
-        if index < len(llm_items):
-            llm_row = llm_items[index]
-        else:
-            llm_row = {
-                "upload_time": "18:00",
-                "title": f"{series_name} - Episode {episode_number}",
-                "description": "",
-                "hashtags": "",
-                "keywords": "",
-            }
+        raw_date_time = str(llm_row.get("date_time", "")).strip().replace("T", " ")
 
         episode_folder = f"EP{episode_number:03d}"
         row = {
             "post_id": str(uuid.uuid4()),
-            "upload_date": upload_date,
-            "upload_time": str(llm_row.get("upload_time", "18:00")),
-            "title": str(llm_row.get("title", "")),
-            "description": str(llm_row.get("description", "")),
-            "hashtags": str(llm_row.get("hashtags", "")),
-            "keywords": str(llm_row.get("keywords", "")),
+            "date_time": raw_date_time,
+            "title": str(llm_row.get("title", "")).strip(),
+            "description": str(llm_row.get("description", "")).strip(),
+            "hashtags": str(llm_row.get("hashtags", "")).strip(),
+            "keywords": str(llm_row.get("keywords", "")).strip(),
             "category": category,
             "sub_category_name": sub_category,
             "series_name": series_name,
@@ -253,15 +275,19 @@ def generate_plansheet_rows(plan_input: dict[str, Any], month: str) -> tuple[lis
         first_day = date(year, month_number, 1)
         last_day = date(year, month_number, calendar.monthrange(year, month_number)[1])
 
-    upload_dates = compute_upload_dates(month, posts_per_week, first_day, last_day)
-    prompt = build_llm_prompt(plan_input, upload_dates)
+    post_slots = compute_post_slots(month, posts_per_week, first_day, last_day)
+    total_posts = len(post_slots)
+    prompt = build_llm_prompt(plan_input, total_posts, first_day, last_day)
     raw_response = call_llm(prompt)
     if not raw_response:
         raise RuntimeError("No response from LLM API")
 
-    llm_items = parse_llm_response(raw_response, len(upload_dates))
+    _log_llm_response(raw_response)
+
+    llm_items = parse_llm_response(raw_response, total_posts)
     if not llm_items:
         raise RuntimeError("Could not parse LLM response")
 
-    rows = build_rows(plan_input, upload_dates, llm_items)
-    return rows, upload_dates
+    rows = build_rows(plan_input, llm_items)
+    generated_date_times = [str(row.get("date_time", "")) for row in rows]
+    return rows, generated_date_times

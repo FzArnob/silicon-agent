@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 REQUIRED_COLUMNS = [
-    "post_id", "upload_date", "upload_time",
+    "post_id", "date_time",
     "title", "description", "hashtags", "keywords",
     "category", "sub_category_name", "series_name", "episode_number",
     "landscape_video_path", "landscape_thumbnail_path",

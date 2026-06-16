@@ -3,7 +3,7 @@
   const STATUS_VALUES = ["PLANNED", "FAILED", "COMPLETED", "PARTIALLY COMPLETED"];
 
   const REQUIRED_COLUMNS = [
-    "post_id", "upload_date", "upload_time",
+    "post_id", "date_time",
     "title", "description", "hashtags", "keywords",
     "category", "sub_category_name", "series_name", "episode_number",
     "landscape_video_path", "landscape_thumbnail_path",
@@ -135,7 +135,7 @@
     dom.toggleInputButton.addEventListener("click", toggleInputDrawer);
     dom.closeInputButton.addEventListener("click", closeInputDrawer);
     dom.drawerOverlay.addEventListener("click", closeInputDrawer);
-    dom.saveInputButton.addEventListener("click", () => void saveMonth());
+    dom.saveInputButton.addEventListener("click", () => void saveInputOnly());
 
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
@@ -303,10 +303,8 @@
       control = createPickerControl(column, rowIndex, normalizeBooleanValue(value));
     } else if (column === "status") {
       control = createPickerControl(column, rowIndex, normalizeStatusValue(value));
-    } else if (column === "upload_date") {
-      control = createPickerControl(column, rowIndex, normalizeDateValue(value));
-    } else if (column === "upload_time") {
-      control = createPickerControl(column, rowIndex, normalizeTimeValue(value));
+    } else if (column === "date_time") {
+      control = createDateTimePickerControl(rowIndex, normalizeDateTimeValue(value));
     } else {
       control = document.createElement("textarea");
       control.className = "cell-control";
@@ -384,6 +382,253 @@
     return wrapper;
   }
 
+  function createDateTimePickerControl(rowIndex, value) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "cell-picker date-time-picker";
+    wrapper.dataset.row = String(rowIndex);
+    wrapper.dataset.column = "date_time";
+
+    const initial = parseDateTimeValue(value, state.month);
+    wrapper.dataset.selectedDate = initial.date;
+    wrapper.dataset.selectedTime = initial.time;
+    wrapper.dataset.viewYear = String(initial.viewYear);
+    wrapper.dataset.viewMonth = String(initial.viewMonth);
+
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "cell-control cell-picker-button";
+    trigger.dataset.row = String(rowIndex);
+    trigger.dataset.column = "date_time";
+
+    const label = document.createElement("span");
+    label.className = "cell-picker-label";
+    label.textContent = value || "Select date and time";
+
+    const arrow = document.createElement("span");
+    arrow.className = "cell-picker-arrow";
+    arrow.textContent = "▾";
+
+    trigger.appendChild(label);
+    trigger.appendChild(arrow);
+    trigger.classList.toggle("modified-field", isRowFieldModified(rowIndex, "date_time"));
+    trigger.classList.toggle("is-placeholder", !value);
+
+    const menu = document.createElement("div");
+    menu.className = "cell-picker-menu date-time-menu hidden";
+
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const isOpen = !menu.classList.contains("hidden");
+      closeAllCellPickers();
+      if (!isOpen) {
+        renderDateTimeMenu(wrapper, trigger, menu, rowIndex);
+        menu.classList.remove("hidden");
+        wrapper.classList.add("is-open");
+      }
+    });
+
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(menu);
+    return wrapper;
+  }
+
+  function renderDateTimeMenu(wrapper, trigger, menu, rowIndex) {
+    menu.innerHTML = "";
+
+    const viewYear = Number(wrapper.dataset.viewYear || "0");
+    const viewMonth = Number(wrapper.dataset.viewMonth || "0");
+    const selectedDate = wrapper.dataset.selectedDate || "";
+    const selectedTime = wrapper.dataset.selectedTime || "18:00";
+
+    const header = document.createElement("div");
+    header.className = "dt-picker-head";
+
+    const prev = document.createElement("button");
+    prev.type = "button";
+    prev.className = "btn btn-muted btn-icon dt-picker-nav";
+    prev.setAttribute("aria-label", "Previous month");
+    prev.textContent = "<";
+    prev.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextMonth = viewMonth === 1 ? 12 : viewMonth - 1;
+      const nextYear = viewMonth === 1 ? viewYear - 1 : viewYear;
+      wrapper.dataset.viewMonth = String(nextMonth);
+      wrapper.dataset.viewYear = String(nextYear);
+      renderDateTimeMenu(wrapper, trigger, menu, rowIndex);
+    });
+
+    const title = document.createElement("div");
+    title.className = "dt-picker-title";
+    title.textContent = new Date(viewYear, viewMonth - 1, 1).toLocaleString("en-US", { month: "long", year: "numeric" });
+
+    const next = document.createElement("button");
+    next.type = "button";
+    next.className = "btn btn-muted btn-icon dt-picker-nav";
+    next.setAttribute("aria-label", "Next month");
+    next.textContent = ">";
+    next.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextMonth = viewMonth === 12 ? 1 : viewMonth + 1;
+      const nextYear = viewMonth === 12 ? viewYear + 1 : viewYear;
+      wrapper.dataset.viewMonth = String(nextMonth);
+      wrapper.dataset.viewYear = String(nextYear);
+      renderDateTimeMenu(wrapper, trigger, menu, rowIndex);
+    });
+
+    header.appendChild(prev);
+    header.appendChild(title);
+    header.appendChild(next);
+    menu.appendChild(header);
+
+    const weekdayRow = document.createElement("div");
+    weekdayRow.className = "dt-weekdays";
+    ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].forEach((name) => {
+      const node = document.createElement("span");
+      node.textContent = name;
+      weekdayRow.appendChild(node);
+    });
+    menu.appendChild(weekdayRow);
+
+    const dayGrid = document.createElement("div");
+    dayGrid.className = "dt-day-grid";
+    const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
+    const firstWeekday = (new Date(viewYear, viewMonth - 1, 1).getDay() + 6) % 7;
+
+    for (let gap = 0; gap < firstWeekday; gap += 1) {
+      const spacer = document.createElement("span");
+      spacer.className = "dt-day-spacer";
+      dayGrid.appendChild(spacer);
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const dayValue = `${String(viewYear).padStart(4, "0")}-${String(viewMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "dt-day";
+      btn.textContent = String(day);
+      btn.classList.toggle("is-selected", dayValue === selectedDate);
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        wrapper.dataset.selectedDate = dayValue;
+        renderDateTimeMenu(wrapper, trigger, menu, rowIndex);
+      });
+      dayGrid.appendChild(btn);
+    }
+    menu.appendChild(dayGrid);
+
+    const timeLabel = document.createElement("div");
+    timeLabel.className = "dt-time-label";
+    timeLabel.textContent = "Time";
+    menu.appendChild(timeLabel);
+
+    const [seedHour, seedMinute] = selectedTime.split(":");
+    const timeRow = document.createElement("div");
+    timeRow.className = "dt-time-row";
+
+    const hourWrap = document.createElement("label");
+    hourWrap.className = "dt-time-input-wrap";
+    const hourInput = document.createElement("input");
+    hourInput.type = "text";
+    hourInput.className = "dt-time-input";
+    hourInput.inputMode = "numeric";
+    hourInput.maxLength = 2;
+    hourInput.placeholder = "HH";
+    hourInput.value = seedHour || "18";
+    hourWrap.appendChild(hourInput);
+
+    const separator = document.createElement("span");
+    separator.className = "dt-time-separator";
+    separator.textContent = ":";
+
+    const minuteWrap = document.createElement("label");
+    minuteWrap.className = "dt-time-input-wrap";
+    const minuteInput = document.createElement("input");
+    minuteInput.type = "text";
+    minuteInput.className = "dt-time-input";
+    minuteInput.inputMode = "numeric";
+    minuteInput.maxLength = 2;
+    minuteInput.placeholder = "mm";
+    minuteInput.value = seedMinute || "00";
+    minuteWrap.appendChild(minuteInput);
+
+    timeRow.appendChild(hourWrap);
+    timeRow.appendChild(separator);
+    timeRow.appendChild(minuteWrap);
+    menu.appendChild(timeRow);
+
+    const footer = document.createElement("div");
+    footer.className = "dt-picker-foot";
+
+    const apply = document.createElement("button");
+    apply.type = "button";
+    apply.className = "btn btn-primary";
+    apply.textContent = "Apply";
+    apply.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const chosenDate = wrapper.dataset.selectedDate || "";
+      const chosenTime = formatTimeInput(hourInput.value, minuteInput.value);
+      wrapper.dataset.selectedTime = chosenTime;
+      const nextValue = chosenDate ? `${chosenDate} ${chosenTime}` : "";
+      const oldValue = state.rows[rowIndex].date_time == null ? "" : String(state.rows[rowIndex].date_time);
+      const normalized = normalizeOnEdit("date_time", nextValue);
+
+      state.rows[rowIndex].date_time = normalized;
+      const labelNode = trigger.querySelector(".cell-picker-label");
+      if (labelNode) {
+        labelNode.textContent = normalized || "Select date and time";
+      }
+      trigger.classList.toggle("modified-field", isRowFieldModified(rowIndex, "date_time"));
+      trigger.classList.toggle("is-placeholder", !normalized);
+      closeAllCellPickers();
+
+      if (oldValue !== normalized) {
+        recomputeDirtyState();
+        syncButtons();
+        updateStatus();
+      }
+    });
+
+    footer.appendChild(apply);
+    menu.appendChild(footer);
+  }
+
+  function formatTimeInput(hourText, minuteText) {
+    const hourRaw = Number.parseInt(String(hourText || "").replace(/\D/g, ""), 10);
+    const minuteRaw = Number.parseInt(String(minuteText || "").replace(/\D/g, ""), 10);
+    const hour = Number.isNaN(hourRaw) ? 0 : Math.min(23, Math.max(0, hourRaw));
+    const minute = Number.isNaN(minuteRaw) ? 0 : Math.min(59, Math.max(0, minuteRaw));
+    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+  }
+
+  function parseDateTimeValue(value, fallbackMonth) {
+    const normalized = normalizeDateTimeValue(value);
+    if (normalized) {
+      const [datePart, timePart] = normalized.split(" ");
+      const [yearText, monthText] = datePart.split("-");
+      return {
+        date: datePart,
+        time: timePart,
+        viewYear: Number(yearText),
+        viewMonth: Number(monthText),
+      };
+    }
+
+    const [yearText, monthText] = String(fallbackMonth || "").split("-");
+    const year = Number(yearText) || new Date().getFullYear();
+    const month = Number(monthText) || (new Date().getMonth() + 1);
+    return {
+      date: `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-01`,
+      time: "18:00",
+      viewYear: year,
+      viewMonth: month,
+    };
+  }
+
   function applyPickerSelection(wrapper, trigger, menu, column, rowIndex, selectedValue) {
     const oldValue = state.rows[rowIndex][column] == null ? "" : String(state.rows[rowIndex][column]);
     const nextValue = normalizeOnEdit(column, selectedValue);
@@ -440,49 +685,17 @@
     if (column === "status") {
       return [...STATUS_VALUES];
     }
-    if (column === "upload_date") {
-      return buildDateOptionsForMonth(state.month);
-    }
-    if (column === "upload_time") {
-      return buildTimeOptions();
-    }
     return [];
   }
 
   function pickerDisplayValue(column, value) {
     if (!value) {
-      if (column === "upload_date") return "Select date";
-      if (column === "upload_time") return "Select time";
       return "Select";
     }
     if (BOOLEAN_COLUMNS.has(column)) {
       return value === "TRUE" ? "True" : "False";
     }
     return value;
-  }
-
-  function buildDateOptionsForMonth(monthText) {
-    const [yearText, monthNumText] = String(monthText || "").split("-");
-    const year = Number(yearText);
-    const monthNumber = Number(monthNumText);
-    if (!year || !monthNumber) return [];
-    const daysInMonth = new Date(year, monthNumber, 0).getDate();
-    const prefix = `${yearText}-${String(monthNumber).padStart(2, "0")}`;
-    const list = [];
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      list.push(`${prefix}-${String(day).padStart(2, "0")}`);
-    }
-    return list;
-  }
-
-  function buildTimeOptions() {
-    const options = [];
-    for (let hour = 0; hour < 24; hour += 1) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        options.push(`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`);
-      }
-    }
-    return options;
   }
 
   function onTableCellChanged(event) {
@@ -519,6 +732,7 @@
   async function generateMonth() {
     if (state.busy) return;
 
+    const hadExisting = state.exists;
     setBusy(true, "Generating with LLM...");
     try {
       const payload = await window.desktopApi.generatePlansheet(state.month, { input: buildInputPayload() });
@@ -535,7 +749,11 @@
       syncButtons();
       syncInputDirtyUi();
       updateStatus();
-      showToast("Plansheet generated.");
+      if (hadExisting) {
+        showToast(`Plansheet regenerated. Replaced with ${state.rows.length} rows.`);
+      } else {
+        showToast(`Plansheet generated with ${state.rows.length} rows.`);
+      }
     } catch (error) {
       showToast(`Generate failed: ${error.message}`, "error");
     } finally {
@@ -580,6 +798,37 @@
     }
   }
 
+  async function saveInputOnly() {
+    if (state.busy) return;
+
+    setBusy(true, "Saving input...");
+    try {
+      const payload = await window.desktopApi.savePlansheet(state.month, {
+        columns: state.columns,
+        rows: state.rows,
+        input: buildInputPayload(),
+      });
+      state.exists = !!payload.exists;
+      state.columns = Array.isArray(payload.columns) ? payload.columns : [...REQUIRED_COLUMNS];
+      state.rows = Array.isArray(payload.rows) ? payload.rows.map((row) => ({ ...row })) : [];
+      state.input = payload.input || buildInputPayload();
+      state.undoStack = [];
+      updateBaselines();
+      recomputeDirtyState();
+      syncGenerateButtonLabel();
+      renderInputForm();
+      renderTable();
+      syncButtons();
+      syncInputDirtyUi();
+      updateStatus();
+      showToast("Generation input saved.");
+    } catch (error) {
+      showToast(`Input save failed: ${error.message}`, "error");
+    } finally {
+      setBusy(false, "");
+    }
+  }
+
   async function removeMonth() {
     if (state.busy || !state.exists) return;
     if (!window.confirm(`Delete plansheet ${state.month}?`)) return;
@@ -617,7 +866,7 @@
   }
 
   function syncButtons() {
-    dom.saveButton.classList.toggle("hidden", !state.dirty);
+    dom.saveButton.classList.toggle("hidden", !state.rowsDirty);
     dom.removeButton.classList.toggle("hidden", !state.exists);
     dom.undoButton.classList.toggle("hidden", !state.rowsDirty);
   }
@@ -847,27 +1096,22 @@
     return STATUS_VALUES.includes(text) ? text : "PLANNED";
   }
 
-  function normalizeDateValue(value) {
-    const text = String(value || "").trim();
-    return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : "";
-  }
-
-  function normalizeTimeValue(value) {
-    const text = String(value || "").trim();
-    return /^([01]\d|2[0-3]):[0-5]\d$/.test(text) ? text : "";
+  function normalizeDateTimeValue(value) {
+    const text = String(value || "").trim().replace("T", " ");
+    return /^\d{4}-\d{2}-\d{2} ([01]\d|2[0-3]):[0-5]\d$/.test(text) ? text : "";
   }
 
   function normalizeCellValue(column, value) {
     if (BOOLEAN_COLUMNS.has(column)) return normalizeBooleanValue(value);
     if (column === "status") return normalizeStatusValue(value);
-    if (column === "upload_date") return normalizeDateValue(value);
-    if (column === "upload_time") return normalizeTimeValue(value);
+    if (column === "date_time") return normalizeDateTimeValue(value);
     return String(value == null ? "" : value);
   }
 
   function normalizeOnEdit(column, value) {
     if (BOOLEAN_COLUMNS.has(column)) return normalizeBooleanValue(value);
     if (column === "status") return normalizeStatusValue(value);
+    if (column === "date_time") return normalizeDateTimeValue(value);
     return String(value == null ? "" : value);
   }
 
@@ -880,12 +1124,8 @@
   }
 
   function applyCellValidation(control, column, value) {
-    if (column === "upload_date") {
-      control.classList.toggle("invalid-field", value !== "" && !/^\d{4}-\d{2}-\d{2}$/.test(value));
-      return;
-    }
-    if (column === "upload_time") {
-      control.classList.toggle("invalid-field", value !== "" && !/^([01]\d|2[0-3]):[0-5]\d$/.test(value));
+    if (column === "date_time") {
+      control.classList.toggle("invalid-field", value !== "" && !/^\d{4}-\d{2}-\d{2} ([01]\d|2[0-3]):[0-5]\d$/.test(value));
       return;
     }
     control.classList.remove("invalid-field");
@@ -894,13 +1134,9 @@
   function validateRowsStrict() {
     for (let index = 0; index < state.rows.length; index += 1) {
       const row = state.rows[index];
-      const dateValue = normalizeCellValue("upload_date", row.upload_date || "");
-      const timeValue = normalizeCellValue("upload_time", row.upload_time || "");
-      if (!dateValue) {
-        return `Row ${index + 1}: upload_date is required and must be YYYY-MM-DD.`;
-      }
-      if (!timeValue) {
-        return `Row ${index + 1}: upload_time is required and must be HH:mm.`;
+      const dateTimeValue = normalizeCellValue("date_time", row.date_time || "");
+      if (!dateTimeValue) {
+        return `Row ${index + 1}: date_time is required and must be YYYY-MM-DD HH:mm.`;
       }
     }
     return "";

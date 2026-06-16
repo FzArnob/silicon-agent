@@ -49,8 +49,7 @@ CREATE TABLE IF NOT EXISTS plansheet_rows (
     plansheet_id INTEGER NOT NULL,
     row_order INTEGER NOT NULL,
     post_id TEXT NOT NULL,
-    upload_date TEXT,
-    upload_time TEXT,
+    date_time TEXT,
     title TEXT,
     description TEXT,
     hashtags TEXT,
@@ -82,7 +81,33 @@ def init_db() -> None:
     with sqlite3.connect(DATABASE_PATH) as connection:
         connection.execute("PRAGMA foreign_keys = ON;")
         connection.executescript(SCHEMA_SQL)
+        _migrate_plansheet_rows_schema(connection)
         connection.commit()
+
+
+def _migrate_plansheet_rows_schema(connection: sqlite3.Connection) -> None:
+    columns_info = connection.execute("PRAGMA table_info(plansheet_rows)").fetchall()
+    column_names = {str(row[1]) for row in columns_info}
+
+    if "date_time" not in column_names:
+        connection.execute("ALTER TABLE plansheet_rows ADD COLUMN date_time TEXT")
+
+    if "upload_date" in column_names:
+        connection.execute(
+            """
+            UPDATE plansheet_rows
+            SET date_time =
+                CASE
+                    WHEN TRIM(COALESCE(upload_date, '')) = '' THEN ''
+                    ELSE TRIM(upload_date) || ' ' ||
+                        CASE
+                            WHEN TRIM(COALESCE(upload_time, '')) = '' THEN '00:00'
+                            ELSE TRIM(upload_time)
+                        END
+                END
+            WHERE TRIM(COALESCE(date_time, '')) = ''
+            """
+        )
 
 
 @contextmanager

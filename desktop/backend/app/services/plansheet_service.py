@@ -193,8 +193,7 @@ def _replace_rows(connection, plansheet_id: int, rows: list[dict[str, Any]]) -> 
                 plansheet_id,
                 row_order,
                 post_id,
-                upload_date,
-                upload_time,
+                date_time,
                 title,
                 description,
                 hashtags,
@@ -212,14 +211,13 @@ def _replace_rows(connection, plansheet_id: int, rows: list[dict[str, Any]]) -> 
                 status,
                 updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             """,
             (
                 plansheet_id,
                 index,
                 row.get("post_id") or "",
-                row.get("upload_date") or "",
-                row.get("upload_time") or "",
+                row.get("date_time") or "",
                 row.get("title") or "",
                 row.get("description") or "",
                 row.get("hashtags") or "",
