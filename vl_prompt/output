@@ -1,0 +1,71 @@
+{
+  "source_frame_json_dir": "C:\\xampp\\htdocs\\silicon-agent\\vl_prompt\\vl_output\\frame_json",
+  "raw_response": "[\n  {\n    \"start\": 0.0,\n    \"end\": 1.509,\n    \"text\": \"The game begins with Sage positioned at C Bend, preparing for engagement.\"\n  },\n  {\n    \"start\": 1.509,\n    \"end\": 2.514,\n    \"text\": \"Jett enters the area, moving towards C Bend as the action develops.\"\n  },\n  {\n    \"start\": 2.514,\n    \"end\": 3.017,\n    \"text\": \"A player spots an enemy in C Site, initiating awareness on the map.\"\n  },\n  {\n    \"start\": 3.017,\n    \"end\": 4.526,\n    \"text\": \"Shabab (Miks) broadcasts spotting an enemy in C Bend, alerting the team to the threat.\"\n  },\n  {\n    \"start\": 4.526,\n    \"end\": 6.035,\n    \"text\": \"Continuous reports confirm the enemy presence spotted by Shabab in C.\"\n  },\n  {\n    \"start\": 6.035,\n    \"end\": 6.538,\n    \"text\": \"The opponent fires, targeting the area near the C Site.\"\n  },\n  {\n    \"start\": 6.538,\n    \"end\": 7.543,\n    \"text\": \"A shot is fired towards the enemy location in C Site.\"\n  },\n  {\n    \"start\": 7.543,\n    \"end\": 9.052,\n    \"text\": \"The enemy is spotted in C Bend, leading to a confrontation on the map.\"\n  },\n  {\n    \"start\": 9.052,\n    \"end\": 10.058,\n    \"text\": \"Viper plants the spike in C Bend, setting up the defensive objective.\"\n  },\n  {\n    \"start\": 10.058,\n    \"end\": 14.584,\n    \"text\": \"The objective shifts to C Site where a teammate successfully plants the spike.\"\n  },\n  {\n    \"start\": 14.584,\n    \"end\": 18.607,\n    \"text\": \"A player fires again in the C Site area during the intense fighting.\"\n  },\n  {\n    \"start\": 18.607,\n    \"end\": 19.11,\n    \"text\": \"Nanga Narangi secures a crucial victory by taking down the final opponent.\"\n  },\n  {\n    \"start\": 19.11,\n    \"end\": 20.116,\n    \"text\": \"The round concludes with an enemy team elimination and a successful win.\"\n  }\n]",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 1.509,
+      "text": "The game begins with Sage positioned at C Bend, preparing for engagement."
+    },
+    {
+      "start": 1.509,
+      "end": 2.514,
+      "text": "Jett enters the area, moving towards C Bend as the action develops."
+    },
+    {
+      "start": 2.514,
+      "end": 3.017,
+      "text": "A player spots an enemy in C Site, initiating awareness on the map."
+    },
+    {
+      "start": 3.017,
+      "end": 4.526,
+      "text": "Shabab (Miks) broadcasts spotting an enemy in C Bend, alerting the team to the threat."
+    },
+    {
+      "start": 4.526,
+      "end": 6.035,
+      "text": "Continuous reports confirm the enemy presence spotted by Shabab in C."
+    },
+    {
+      "start": 6.035,
+      "end": 6.538,
+      "text": "The opponent fires, targeting the area near the C Site."
+    },
+    {
+      "start": 6.538,
+      "end": 7.543,
+      "text": "A shot is fired towards the enemy location in C Site."
+    },
+    {
+      "start": 7.543,
+      "end": 9.052,
+      "text": "The enemy is spotted in C Bend, leading to a confrontation on the map."
+    },
+    {
+      "start": 9.052,
+      "end": 10.058,
+      "text": "Viper plants the spike in C Bend, setting up the defensive objective."
+    },
+    {
+      "start": 10.058,
+      "end": 14.584,
+      "text": "The objective shifts to C Site where a teammate successfully plants the spike."
+    },
+    {
+      "start": 14.584,
+      "end": 18.607,
+      "text": "A player fires again in the C Site area during the intense fighting."
+    },
+    {
+      "start": 18.607,
+      "end": 19.11,
+      "text": "Nanga Narangi secures a crucial victory by taking down the final opponent."
+    },
+    {
+      "start": 19.11,
+      "end": 20.116,
+      "text": "The round concludes with an enemy team elimination and a successful win."
+    }
+  ]
+}
