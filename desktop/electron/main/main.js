@@ -73,9 +73,10 @@ function createWindow() {
     height: 900,
     minWidth: 1100,
     minHeight: 700,
-    title: "Silicon Agent - Plansheet Desktop",
+    title: "Plansheet",
     autoHideMenuBar: true,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#0b0d12",
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "..", "preload", "preload.js"),
       contextIsolation: true,
@@ -87,9 +88,9 @@ function createWindow() {
   const rendererPath = path.join(__dirname, "..", "renderer", "index.html");
   mainWindow.loadFile(rendererPath);
 
-  if (!app.isPackaged) {
-    mainWindow.webContents.openDevTools({ mode: "detach" });
-  }
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;

@@ -13,6 +13,28 @@ import requests
 LLM_API_URL = os.getenv("LLM_API_URL", "http://localhost:2000")
 LLM_MODEL = os.getenv("LLM_MODEL", "google/gemma-4-e2b")
 
+POST_KEYS = ["date_time", "title", "description", "hashtags", "keywords"]
+
+
+def build_response_schema(total_posts: int) -> dict[str, Any]:
+    """JSON Schema the model is forced to decode into.
+
+    The server compiles this into a decoding grammar, so the response cannot be
+    malformed JSON, cannot miss or invent a key, and cannot return the wrong
+    number of posts.
+    """
+    return {
+        "type": "array",
+        "minItems": total_posts,
+        "maxItems": total_posts,
+        "items": {
+            "type": "object",
+            "properties": {key: {"type": "string"} for key in POST_KEYS},
+            "required": list(POST_KEYS),
+            "additionalProperties": False,
+        },
+    }
+
 
 def _log_llm_response(raw_response: str) -> None:
     logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
@@ -91,7 +113,7 @@ CONTEXT:
 - Content type: {plan_input.get('content_type')}
 - Tone: {plan_input.get('tone')}
 - Language: {plan_input.get('language')}
-- Target audience regions: {', '.join(plan_input.get('target_audience', []))}
+- Target audience regions: {plan_input.get('target_audience')}
 - Timezone for upload times: {plan_input.get('timezone')}
 - Duration: {plan_input.get('duration_range_seconds')} seconds
 - Goal: {plan_input.get('goal')}
@@ -126,44 +148,97 @@ Return the full JSON array now. Ensure valid JSON. Double-check every quote and 
     return prompt
 
 
-def _extract_text(output_field: Any) -> str | None:
-    if isinstance(output_field, str):
-        return output_field.strip()
+def call_llm(prompt: str, total_posts: int) -> str:
+    """Ask the model for the posts, with the response schema enforced by the server.
 
-    if isinstance(output_field, list):
-        for item in output_field:
-            if isinstance(item, dict) and item.get("type") == "message":
-                content = item.get("content", "")
-                if isinstance(content, str) and content.strip():
-                    return content.strip()
-        for item in output_field:
-            if isinstance(item, dict):
-                content = item.get("content", "")
-                if isinstance(content, str) and content.strip():
-                    return content.strip()
-
-    return None
-
-
-def call_llm(prompt: str) -> str | None:
+    Uses the OpenAI-compatible endpoint because that is the one that accepts
+    `response_format`; the prompt text itself is sent unchanged.
+    """
     payload = {
         "model": LLM_MODEL,
-        "input": prompt,
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "plansheet_posts",
+                "strict": True,
+                "schema": build_response_schema(total_posts),
+            },
+        },
     }
 
     try:
         response = requests.post(
-            f"{LLM_API_URL}/api/v1/chat",
+            f"{LLM_API_URL}/v1/chat/completions",
             headers={"Content-Type": "application/json"},
             json=payload,
             timeout=300,
         )
-        if response.status_code == 200:
-            result = response.json()
-            return _extract_text(result.get("output"))
-        return None
-    except Exception:
-        return None
+    except requests.RequestException as exc:
+        raise RuntimeError(f"Could not reach the LLM at {LLM_API_URL}: {exc}") from exc
+
+    if response.status_code != 200:
+        raise RuntimeError(f"LLM returned HTTP {response.status_code}: {response.text[:300]}")
+
+    try:
+        content = response.json()["choices"][0]["message"]["content"]
+    except (ValueError, KeyError, IndexError) as exc:
+        raise RuntimeError(f"Unexpected LLM response shape: {response.text[:300]}") from exc
+
+    return (content or "").strip()
+
+
+def _repair_json(text: str) -> str:
+    """Fix the malformations models produce most often around valid content."""
+    text = re.sub(r",\s*}", "}", text)
+    text = re.sub(r",\s*]", "]", text)
+    # Adjacent objects with the separating comma dropped.
+    text = re.sub(r"}\s*{", "},{", text)
+    # A key that lost its opening quote:  ...","hashtags":...  ->  ...,"hashtags":...
+    text = re.sub(r'([,{])(\s*)([A-Za-z_][A-Za-z0-9_]*)"(\s*):', r'\1\2"\3"\4:', text)
+    return text
+
+
+def _iter_object_chunks(text: str):
+    """Yield each top-level {...} span, ignoring braces inside strings."""
+    depth = 0
+    start = None
+    in_string = False
+    escaped = False
+
+    for index, char in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            if depth == 0:
+                start = index
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0 and start is not None:
+                yield text[start:index + 1]
+                start = None
+
+
+def _salvage_objects(text: str) -> list[dict[str, Any]]:
+    salvaged: list[dict[str, Any]] = []
+    for chunk in _iter_object_chunks(text):
+        try:
+            item = json.loads(_repair_json(chunk))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(item, dict):
+            salvaged.append(item)
+    return salvaged
 
 
 def parse_llm_response(raw_text: str, expected_count: int) -> list[dict[str, Any]] | None:
@@ -186,16 +261,16 @@ def parse_llm_response(raw_text: str, expected_count: int) -> list[dict[str, Any
     if first_bracket == -1 or last_bracket == -1:
         return None
 
-    json_str = text[first_bracket:last_bracket + 1]
-    json_str = re.sub(r',\s*}', '}', json_str)
-    json_str = re.sub(r',\s*]', ']', json_str)
-    # Repair a frequent model formatting issue where adjacent objects miss a comma.
-    json_str = re.sub(r'}\s*{', '},{', json_str)
+    json_str = _repair_json(text[first_bracket:last_bracket + 1])
 
     try:
         data = json.loads(json_str)
     except json.JSONDecodeError:
-        return None
+        # One malformed object must not cost the whole batch: recover the objects
+        # that are still readable and drop only the ones that are not.
+        data = _salvage_objects(json_str)
+        if not data:
+            return None
 
     if not isinstance(data, list):
         return None
@@ -261,7 +336,7 @@ def build_rows(plan_input: dict[str, Any], llm_items: list[dict[str, Any]], star
     return rows
 
 
-def generate_plansheet_rows(plan_input: dict[str, Any], month: str) -> tuple[list[dict[str, Any]], list[str]]:
+def generate_plansheet_rows(plan_input: dict[str, Any], month: str) -> list[dict[str, Any]]:
     plan_input = dict(plan_input)
     plan_input["month"] = month
     posts_per_week = int(plan_input.get("posts_per_week") or 7)
@@ -278,16 +353,14 @@ def generate_plansheet_rows(plan_input: dict[str, Any], month: str) -> tuple[lis
     post_slots = compute_post_slots(month, posts_per_week, first_day, last_day)
     total_posts = len(post_slots)
     prompt = build_llm_prompt(plan_input, total_posts, first_day, last_day)
-    raw_response = call_llm(prompt)
-    if not raw_response:
-        raise RuntimeError("No response from LLM API")
-
+    raw_response = call_llm(prompt, total_posts)
     _log_llm_response(raw_response)
+
+    if not raw_response:
+        raise RuntimeError("The LLM returned an empty response.")
 
     llm_items = parse_llm_response(raw_response, total_posts)
     if not llm_items:
-        raise RuntimeError("Could not parse LLM response")
+        raise RuntimeError("The LLM response was not readable as JSON. See the newest file in backend/logs.")
 
-    rows = build_rows(plan_input, llm_items)
-    generated_date_times = [str(row.get("date_time", "")) for row in rows]
-    return rows, generated_date_times
+    return build_rows(plan_input, llm_items)

@@ -3,93 +3,129 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plansheet Desktop</title>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src http://127.0.0.1:8000">
+  <title>Plansheet</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-shell">
+  <div class="shell">
     <header class="topbar">
-      <div class="topbar-left">
-        <label class="field-label" for="monthButton">Month</label>
-        <div class="month-row">
-          <button id="monthButton" class="month-button" type="button" aria-haspopup="dialog" aria-expanded="false">----</button>
-          <button id="toggleInputButton" class="btn btn-muted" type="button">Generation Input</button>
-        </div>
-        <div id="monthPicker" class="month-picker hidden" role="dialog" aria-label="Select month">
-          <div class="month-picker-head">
-            <button id="monthPrevYear" class="btn btn-muted btn-icon" type="button" aria-label="Previous year">&lt;</button>
-            <div id="monthPickerYear" class="month-picker-year">----</div>
-            <button id="monthNextYear" class="btn btn-muted btn-icon" type="button" aria-label="Next year">&gt;</button>
-          </div>
-          <div id="monthGrid" class="month-grid">
-            <button class="month-cell" type="button" data-month="01">Jan</button>
-            <button class="month-cell" type="button" data-month="02">Feb</button>
-            <button class="month-cell" type="button" data-month="03">Mar</button>
-            <button class="month-cell" type="button" data-month="04">Apr</button>
-            <button class="month-cell" type="button" data-month="05">May</button>
-            <button class="month-cell" type="button" data-month="06">Jun</button>
-            <button class="month-cell" type="button" data-month="07">Jul</button>
-            <button class="month-cell" type="button" data-month="08">Aug</button>
-            <button class="month-cell" type="button" data-month="09">Sep</button>
-            <button class="month-cell" type="button" data-month="10">Oct</button>
-            <button class="month-cell" type="button" data-month="11">Nov</button>
-            <button class="month-cell" type="button" data-month="12">Dec</button>
-          </div>
-          <div class="month-picker-foot">
-            <button id="monthThis" class="btn btn-muted" type="button">This month</button>
-          </div>
-        </div>
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span class="brand-name">Plansheet</span>
       </div>
 
-      <div class="topbar-actions">
-        <button id="generateButton" class="btn btn-primary" type="button">Generate</button>
-        <button id="saveButton" class="btn btn-success hidden" type="button">Save</button>
-        <button id="removeButton" class="btn btn-danger hidden" type="button">Remove</button>
-        <button id="undoButton" class="btn btn-muted hidden" type="button">Undo</button>
+      <div class="month-nav">
+        <button id="prevMonth" class="icon-btn" type="button" aria-label="Previous month">&#8249;</button>
+        <div class="month-anchor">
+          <button id="monthButton" class="month-btn" type="button" aria-haspopup="dialog" aria-expanded="false">
+            <span id="monthLabel">&mdash;</span>
+            <span class="caret"></span>
+          </button>
+          <div id="monthPicker" class="popover month-picker hidden" role="dialog" aria-label="Select month">
+            <div class="picker-head">
+              <button id="prevYear" class="icon-btn icon-btn-sm" type="button" aria-label="Previous year">&#8249;</button>
+              <span id="pickerYear" class="picker-title">&mdash;</span>
+              <button id="nextYear" class="icon-btn icon-btn-sm" type="button" aria-label="Next year">&#8250;</button>
+            </div>
+            <div id="monthGrid" class="month-grid"></div>
+            <div class="picker-foot">
+              <button id="thisMonth" class="btn btn-ghost btn-sm" type="button">This month</button>
+            </div>
+          </div>
+        </div>
+        <button id="nextMonth" class="icon-btn" type="button" aria-label="Next month">&#8250;</button>
+      </div>
+
+      <div class="topbar-right">
+        <div class="set-anchor">
+          <span class="field-label">Input set</span>
+          <button id="setButton" class="select-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span id="setLabel">&mdash;</span>
+            <span class="caret"></span>
+          </button>
+          <div id="setMenu" class="popover set-menu hidden" role="listbox"></div>
+        </div>
+        <button id="manageSets" class="icon-btn" type="button" title="Manage input sets" aria-label="Manage input sets">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/><path d="M19.4 13a7.8 7.8 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L14.9 3H9.1l-.4 2.6c-.6.3-1.2.6-1.7 1l-2.4-1-2 3.4L2.6 11a7.8 7.8 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.8 1.7 1l.4 2.6h5.8l.4-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z" opacity=".45"/></svg>
+        </button>
       </div>
     </header>
 
-    <section class="statusbar">
-      <div id="statusText" class="status-text">Starting backend...</div>
-      <div id="busyText" class="busy-text"></div>
-    </section>
+    <div class="actionbar">
+      <div class="meta-chips">
+        <span id="rowCountChip" class="chip">No plansheet</span>
+        <span id="dirtyChip" class="chip chip-warn hidden">Unsaved changes</span>
+      </div>
+      <div class="actions">
+        <button id="undoButton" class="btn btn-ghost hidden" type="button">Undo</button>
+        <button id="deleteButton" class="btn btn-ghost btn-danger hidden" type="button">Delete month</button>
+        <button id="saveButton" class="btn btn-solid hidden" type="button">Save</button>
+        <button id="generateButton" class="btn btn-accent" type="button">Generate</button>
+      </div>
+    </div>
 
-    <main class="content-grid">
-      <section class="panel panel-table">
-        <div id="emptyState" class="empty-state hidden">
-          <h1>No Plansheet</h1>
-          <p>Generate a monthly plansheet to begin editing.</p>
-        </div>
+    <main class="content">
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-art"></div>
+        <h1>No plansheet for this month</h1>
+        <p>Pick an input set and generate the month's posts.</p>
+        <button id="emptyGenerate" class="btn btn-accent" type="button">Generate plansheet</button>
+      </div>
 
-        <div id="tableWrap" class="table-wrap hidden">
-          <table id="plansheetTable" class="plansheet-table">
-            <thead></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
+      <div id="tableWrap" class="table-wrap hidden">
+        <table id="plansheetTable" class="sheet-table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </main>
 
-    <div id="drawerOverlay" class="drawer-overlay"></div>
-    <aside id="inputDrawer" class="input-drawer" aria-hidden="true">
-      <div class="input-drawer-header">
-        <h2>Generation Input</h2>
-        <div class="drawer-actions">
-          <button id="saveInputButton" class="btn btn-success hidden" type="button" title="Save generation input">Save</button>
-          <button id="closeInputButton" class="btn btn-muted btn-icon" type="button" aria-label="Close generation input panel" title="Close">
-            <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
-              <path d="M6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5z" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="input-drawer-body">
-        <div id="inputForm" class="input-form"></div>
-      </div>
-    </aside>
-
-    <div id="toastHost" class="toast-host" aria-live="polite" aria-atomic="true"></div>
+    <footer class="statusbar">
+      <span id="statusText" class="status-text">Connecting to backend&hellip;</span>
+      <span id="busyText" class="busy-text"></span>
+    </footer>
   </div>
+
+  <div id="setsOverlay" class="overlay hidden"></div>
+  <aside id="setsPanel" class="sets-panel hidden" aria-hidden="true" aria-label="Input sets">
+    <header class="panel-head">
+      <h2>Input sets</h2>
+      <button id="closeSets" class="icon-btn" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg>
+      </button>
+    </header>
+    <div class="panel-body">
+      <nav class="sets-list">
+        <div id="setsList" class="sets-list-items"></div>
+        <button id="newSet" class="btn btn-ghost btn-block" type="button">+ New set</button>
+      </nav>
+      <section class="sets-form">
+        <div id="setForm" class="form-grid"></div>
+        <div class="form-foot">
+          <button id="deleteSet" class="btn btn-ghost btn-danger" type="button">Delete</button>
+          <div class="form-foot-right">
+            <span id="setFormHint" class="form-hint"></span>
+            <button id="saveSet" class="btn btn-accent" type="button">Save set</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <div id="dialogHost" class="dialog-host hidden">
+    <div class="dialog" role="alertdialog" aria-modal="true">
+      <h3 id="dialogTitle"></h3>
+      <p id="dialogBody"></p>
+      <div class="dialog-actions">
+        <button id="dialogCancel" class="btn btn-ghost" type="button">Cancel</button>
+        <button id="dialogConfirm" class="btn btn-accent" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>

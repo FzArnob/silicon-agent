@@ -1,53 +1,82 @@
 # Silicon Agent Desktop
 
-Desktop plansheet manager built with Electron (UI), FastAPI (backend), and SQLite (storage).
-
-## Structure
-
-- electron/main: Electron main process and backend process launcher
-- electron/preload: Safe renderer bridge APIs
-- electron/renderer: Desktop UI
-- backend/app: FastAPI app, routes, services, generator, SQLite setup
-- backend/scripts: Migration scripts
-- data/app.db: SQLite database created at runtime
+Monthly plansheet manager: Electron UI, FastAPI backend, SQLite storage.
 
 ## Prerequisites
 
 - Node.js 18+
 - Python 3.10+
+- A local LLM server with an OpenAI-compatible `/v1/chat/completions` route that
+  supports `response_format: json_schema` (LM Studio, llama.cpp, vLLM, Ollama).
+  Default `http://localhost:2000`.
 
-## Install
+## Install and run
 
-1. Install Node dependencies:
+```
+run.bat setup     REM npm install + pip install
+run.bat start     REM launches Electron, which starts the backend itself
+```
 
-   npm install
+Or manually:
 
-2. Install Python dependencies:
-
-   pip install -r backend/requirements.txt
-
-## Run
-
+```
+npm install
+pip install -r backend/requirements.txt
 npm start
+```
 
-This launches Electron and starts the local FastAPI backend automatically.
+## How it works
 
-## Optional Migration from Existing CSV
+Two things are stored: **input sets** and **plansheets**.
 
-python backend/scripts/import_csv_to_sqlite.py
+- An **input set** is a named, reusable generation configuration (channel, category,
+  audience, tone, cadence, storage path, special instructions). A set named `Default`
+  is seeded into the database on first run and is pre-selected. Add, edit, and delete
+  sets from the *Input set* menu in the title bar. At least one set always exists.
+- A **plansheet** is one month of posts. Each month records which input set it was
+  generated with. Generating replaces that month's rows; rows stay editable in the grid.
 
-This imports monthly CSV files from social/plansheet/monthly_sheets into SQLite and stores monthly generation input in SQLite as well.
+Field names are identical everywhere — the form, the API payloads, and the SQLite
+columns all use the same keys, with no renaming or conversion in between. The form and
+the grid are built from `backend/app/defaults.py`, served over `GET /api/meta`, so the
+UI cannot drift from the database.
+
+## Layout
+
+```
+electron/main      Electron main process, spawns the backend
+electron/preload   Renderer bridge to the HTTP API
+electron/renderer  UI (index.html, app.js, styles.css)
+backend/app        FastAPI app, routes, services, generator, schema
+data/app.db        SQLite database, created and migrated on startup
+backend/logs       Raw LLM responses, one file per generation
+```
 
 ## API
 
-- GET /api/health
-- GET /api/plansheets/{month}
-- PUT /api/plansheets/{month}
-- POST /api/plansheets/{month}/generate
-- DELETE /api/plansheets/{month}
+```
+GET    /api/health
+GET    /api/meta                          field definitions for the UI
+GET    /api/input-sets
+POST   /api/input-sets
+PUT    /api/input-sets/{id}
+DELETE /api/input-sets/{id}
+GET    /api/plansheets/{month}
+PUT    /api/plansheets/{month}            save rows + selected input set
+PUT    /api/plansheets/{month}/input-set  switch the month's input set
+POST   /api/plansheets/{month}/generate   generate and replace rows
+DELETE /api/plansheets/{month}
+```
 
-## Notes
+`month` is `YYYY-MM`.
 
-- Plansheet rows and generation input are both persisted in SQLite.
-- Existing generator logic is preserved and adapted for DB-backed persistence.
-- LLM endpoint defaults to http://localhost:2000 and model google/gemma-4-e2b.
+## Environment
+
+| Variable      | Default                  | Description         |
+| ------------- | ------------------------ | ------------------- |
+| `LLM_API_URL` | `http://localhost:2000`  | LLM base URL; `/v1/chat/completions` is appended |
+| `LLM_MODEL`   | `google/gemma-4-e2b`     | Model name          |
+
+Generation asks the server to constrain decoding to a JSON schema, so the reply is
+always valid JSON with exactly the right number of posts and exactly the expected keys.
+Raw replies are kept in `backend/logs/` for inspection.
